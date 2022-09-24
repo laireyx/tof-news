@@ -9,9 +9,10 @@ import { env } from "node:process";
  */
 export default fp(
   async function (fastify, opts) {
-    fastify.register(fastifyMongo, {
-      url: `mongodb+srv://${env.MONGO_AUTHORITY}`,
+    await fastify.register(fastifyMongo, {
+      url: `mongodb+srv://${env.MONGO_AUTHORITY}/tof-news`,
     });
+    console.log("[@plugin/mongodb] @fastify/mongodb registered");
   },
   {
     name: "mongodb",

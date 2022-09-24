@@ -11,7 +11,6 @@ const twitter_api_v2_1 = require("twitter-api-v2");
  * @see https://github.com/fastify/fastify-sensible
  */
 exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
-    console.log("[@plugin/twitter] Initialize stream...");
     const stream = await fastify.twitterApi.v2.searchStream({
         expansions: [
             "author_id",
@@ -27,6 +26,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
         const authorId = tweet.data.author_id;
         const authorUser = tweet.includes?.users?.find((user) => user.id === authorId);
         const news = {
+            url: `https://twitter.com/${authorUser?.username}/status/${tweet.data.id}`,
             source: "Twitter",
             author: `${authorUser?.name}(@${authorUser?.username})`,
             content: tweet.data.text,
@@ -39,6 +39,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
         };
         fastify.report(news);
     });
+    console.log("[@plugin/twitter] Stream connected");
 }, {
     name: "twitter/streaming",
     dependencies: ["twitter/init-api"],

@@ -23,7 +23,7 @@ export default async function (fastify: FastifyInstance) {
       const { p } = request.query;
       const newsArray = await collection
         ?.find()
-        .sort({ _id: -1 })
+        .sort({ timestamp: -1 })
         .skip(p * NEWS_PER_PAGE)
         .limit(NEWS_PER_PAGE)
         .toArray();

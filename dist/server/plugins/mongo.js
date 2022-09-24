@@ -12,9 +12,10 @@ const node_process_1 = require("node:process");
  * @see https://github.com/fastify/fastify-sensible
  */
 exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
-    fastify.register(mongodb_1.default, {
-        url: `mongodb+srv://${node_process_1.env.MONGO_AUTHORITY}`,
+    await fastify.register(mongodb_1.default, {
+        url: `mongodb+srv://${node_process_1.env.MONGO_AUTHORITY}/tof-news`,
     });
+    console.log("[@plugin/mongodb] @fastify/mongodb registered");
 }, {
     name: "mongodb",
 });

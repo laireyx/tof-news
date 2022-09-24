@@ -6,7 +6,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_plugin_1 = __importDefault(require("fastify-plugin"));
 const cors_1 = __importDefault(require("@fastify/cors"));
 exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
-    fastify.register(cors_1.default, {
+    await fastify.register(cors_1.default, {
         origin: true,
     });
+    console.log("[@plugin/cors] @fastify/cors registered");
+}, {
+    name: "cors",
 });

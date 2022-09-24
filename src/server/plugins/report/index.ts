@@ -7,6 +7,7 @@ type NewsMedia = {
 };
 
 type News = {
+  url: string;
   source: string;
   author: string;
   content: string;

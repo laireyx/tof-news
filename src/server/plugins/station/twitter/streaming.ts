@@ -9,7 +9,6 @@ import { News } from "../../report";
  */
 export default fp(
   async function (fastify, opts) {
-    console.log("[@plugin/twitter] Initialize stream...");
     const stream = await fastify.twitterApi.v2.searchStream({
       expansions: [
         "author_id",
@@ -29,6 +28,7 @@ export default fp(
       );
 
       const news: News = {
+        url: `https://twitter.com/${authorUser?.username}/status/${tweet.data.id}`,
         source: "Twitter",
         author: `${authorUser?.name}(@${authorUser?.username})`,
         content: tweet.data.text,
@@ -42,6 +42,8 @@ export default fp(
       };
       fastify.report(news);
     });
+
+    console.log("[@plugin/twitter] Stream connected");
   },
   {
     name: "twitter/streaming",

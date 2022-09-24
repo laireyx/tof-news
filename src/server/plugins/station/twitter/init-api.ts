@@ -15,7 +15,6 @@ export default fp(
   async function (fastify, opts) {
     const client = new TwitterApi(env.TWITTER_API_BEARER ?? "");
 
-    console.log("[@plugin/twitter] Initialize stream rules...");
     // Get and delete old rules if needed
     const existingRules = await client.v2.streamRules();
     if (existingRules.data?.length) {
@@ -35,6 +34,7 @@ export default fp(
     });
 
     fastify.decorate("twitterApi", client);
+    console.log("[@plugin/twitter] Stream rules loaded");
   },
   {
     name: "twitter/init-api",
