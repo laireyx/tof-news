@@ -1,5 +1,4 @@
 import "dotenv/config";
-import TwitterStation from "./station/twitter/index";
+import start from "./server";
 
-const station = new TwitterStation();
-station.listen();
+start();
