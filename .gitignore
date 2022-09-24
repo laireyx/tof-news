@@ -1,0 +1,6 @@
+# nodejs + typescript
+node_modules/
+dist/
+
+# envvars
+.env
