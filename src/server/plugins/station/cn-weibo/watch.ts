@@ -1,5 +1,6 @@
 import fp from "fastify-plugin";
 import { News } from "../../report/index";
+import { env } from "node:process";
 
 type BlogUser = {
   id: number;
@@ -42,22 +43,23 @@ export default fp(
 
     const watch = async () => {
       const result: BlogResponse = await got
-        .post(newsBoardUrl, {
+        .get(newsBoardUrl, {
           headers: {
-            "x-areaid": "na",
-            "x-gameid": "4",
-            "x-language": "en",
-            "x-source": "pc_web",
+            accept:
+              "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng," +
+              "*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+            "accept-encoding": "gzip, deflate, br",
+            "accept-language": "en-US,en;q=0.9,zh-CN;q=0.8,zh;q=0.7",
+            "cache-control": "max-age=0",
+            dnt: "1",
+            cookie: env.WEIBO_COOKIE,
+            "upgrade-insecure-requests": "1",
+            "user-agent":
+              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+              "AppleWebKit/537.36 (KHTML, like Gecko) " +
+              "Chrome/101.0.4951.54 Safari/537.36",
           },
-          json: {
-            gameid: "4",
-            offset: 0,
-            get_num: 10,
-            primary_label_id: "158",
-            secondary_label_id: "260",
-            use_default_language: false,
-            language: ["en"],
-          },
+          followRedirect: true,
         })
         .json();
 

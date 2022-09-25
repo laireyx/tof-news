@@ -32,16 +32,16 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
         await result.data.info_content.map(async ({ content_id, author, content_part, pub_timestamp, pic_urls, }) => {
             const news = {
                 url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
-                source: "TOF Global Official News",
+                source: "Homepage/EN",
                 author,
-                content: content_part,
+                content: content_part + "...",
                 timestamp: new Date(1000 * +pub_timestamp),
                 media: pic_urls.map((pictureUrl) => ({
                     type: "photo",
                     url: pictureUrl,
                 })),
             };
-            return await collection?.updateOne(news, { $set: news }, { upsert: true });
+            return await collection?.updateOne({ url: news.url }, { $set: news }, { upsert: true });
         });
         setTimeout(() => watch(), FETCH_INTERVAL);
     };
