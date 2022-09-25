@@ -7,7 +7,7 @@ const fastify_plugin_1 = __importDefault(require("fastify-plugin"));
 const node_process_1 = require("node:process");
 exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
     const got = await import("got").then((module) => module.default);
-    const collection = fastify.mongo.db?.collection("cn-weibo");
+    const collection = fastify.mongo.db?.collection("news");
     const FETCH_INTERVAL = 60 * 1000;
     const newsBoardUrl = "https://weibo.com/ajax/statuses/mymblog?uid=7455256856";
     const watch = async () => {
