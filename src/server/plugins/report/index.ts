@@ -26,7 +26,7 @@ export default fp(
     fastify.decorate("report", async function (news: News) {
       console.log("[@plugin/report] News: ", JSON.stringify(news, null, 2));
 
-      const newsCollection = await fastify.mongo.db?.collection("news");
+      const newsCollection = fastify.mongo.db?.collection("news");
       return await newsCollection?.insertOne(news);
     });
   },

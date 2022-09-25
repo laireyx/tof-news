@@ -9,7 +9,7 @@ type BoardContent = {
   content_type: number;
   title: string;
   pic_urls: string[];
-  pub_timestamp: number;
+  pub_timestamp: string;
 };
 
 type BoardData = {
@@ -69,7 +69,7 @@ export default fp(
             source: "TOF Global Official News",
             author,
             content: content_part,
-            timestamp: new Date(pub_timestamp),
+            timestamp: new Date(1000 * +pub_timestamp),
             media: pic_urls.map((pictureUrl) => ({
               type: "photo",
               url: pictureUrl,
