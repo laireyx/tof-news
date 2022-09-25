@@ -77,7 +77,7 @@ export default fp(
           };
 
           return await collection?.updateOne(
-            news,
+            { url: news.url },
             { $set: news },
             { upsert: true }
           );
