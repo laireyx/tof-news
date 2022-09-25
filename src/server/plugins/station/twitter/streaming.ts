@@ -1,5 +1,7 @@
+import stations from "./stations.json";
+
 import fp from "fastify-plugin";
-import { ETwitterStreamEvent, TwitterApi } from "twitter-api-v2";
+import { ETwitterStreamEvent } from "twitter-api-v2";
 import { News } from "../../report";
 
 /**
@@ -9,6 +11,12 @@ import { News } from "../../report";
  */
 export default fp(
   async function (fastify, opts) {
+    const sourceMap: Map<string, string> = new Map();
+
+    stations.forEach((station) => {
+      sourceMap.set(station.username.toLowerCase(), station.source);
+    });
+
     const stream = await fastify.twitterApi.v2.searchStream({
       expansions: [
         "author_id",
@@ -29,7 +37,8 @@ export default fp(
 
       const news: News = {
         url: `https://twitter.com/${authorUser?.username}/status/${tweet.data.id}`,
-        source: "Twitter",
+        source:
+          sourceMap.get(authorUser?.username.toLowerCase() ?? "") ?? "Twitter",
         author: `${authorUser?.name}(@${authorUser?.username})`,
         authorImg: authorUser?.profile_image_url,
         content: tweet.data.text,

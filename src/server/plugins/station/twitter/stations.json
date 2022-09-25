@@ -1,1 +1,5 @@
-["ToF_EN_Official", "ToF_JP", "sova_tof"]
+[
+  { "username": "ToF_EN_Official", "source": "Twitter/EN" },
+  { "username": "ToF_JP", "source": "Twitter/JP" },
+  { "username": "Sova_ToF", "source": "Twitter/Leak" }
+]

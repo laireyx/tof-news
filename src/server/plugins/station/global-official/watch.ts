@@ -66,7 +66,7 @@ export default fp(
         }) => {
           const news: News = {
             url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
-            source: "TOF Global Official News",
+            source: "Homepage/EN",
             author,
             content: content_part + "...",
             timestamp: new Date(1000 * +pub_timestamp),

@@ -26,6 +26,7 @@ export default fp(
     }
 
     const usernameRules = stations
+      .map((account) => account.username)
       .map((username) => `from:${username}`)
       .join(" OR ");
 
