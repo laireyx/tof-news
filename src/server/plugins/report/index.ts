@@ -10,6 +10,7 @@ type News = {
   url: string;
   source: string;
   author: string;
+  authorImg?: string;
   content: string;
   timestamp: Date;
   media: NewsMedia[];

@@ -16,7 +16,7 @@ export default fp(
         "attachments.poll_ids",
       ],
       autoConnect: true,
-      "user.fields": ["name", "username"],
+      "user.fields": ["name", "username", "profile_image_url"],
       "media.fields": ["type", "alt_text", "preview_image_url", "url"],
       "tweet.fields": ["id", "text", "attachments", "created_at"],
     });
@@ -31,6 +31,7 @@ export default fp(
         url: `https://twitter.com/${authorUser?.username}/status/${tweet.data.id}`,
         source: "Twitter",
         author: `${authorUser?.name}(@${authorUser?.username})`,
+        authorImg: authorUser?.profile_image_url,
         content: tweet.data.text,
         timestamp: new Date(tweet.data.created_at ?? Date.now()),
         media:
