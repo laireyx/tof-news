@@ -77,7 +77,7 @@ export default fp(
               lastTimestamp = timestamp;
 
               const news: News = {
-                url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
+                url: `https://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
                 source: "Weibo/CN",
                 author: user.screen_name,
                 authorImg: user.profile_image_url,
