@@ -7,7 +7,6 @@ const fastify_plugin_1 = __importDefault(require("fastify-plugin"));
 const node_process_1 = require("node:process");
 exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
     const got = await import("got").then((module) => module.default);
-    const collection = fastify.mongo.db?.collection("news");
     const FETCH_INTERVAL = 60 * 1000;
     const newsBoardUrl = "https://weibo.com/ajax/statuses/mymblog?uid=7455256856";
     const watch = async () => {
@@ -43,7 +42,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
                     previewUrl: pic_infos?.[picId].thumbnail.url,
                 })) ?? [],
             };
-            return await collection?.updateOne({ url: news.url }, { $set: news }, { upsert: true });
+            return await fastify.report(news);
         }));
         setTimeout(() => watch(), FETCH_INTERVAL);
     };
@@ -51,5 +50,5 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
     console.log("[@plugin/cn-weibo] Interval fetch installed");
 }, {
     name: "cn-weibo",
-    dependencies: ["mongodb"],
+    dependencies: ["report"],
 });

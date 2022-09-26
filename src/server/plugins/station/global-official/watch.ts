@@ -29,7 +29,6 @@ type BoardResponse = {
 export default fp(
   async function (fastify, opts) {
     const got = await import("got").then((module) => module.default);
-    const collection = fastify.mongo.db?.collection("news");
     const FETCH_INTERVAL = 60 * 1000;
 
     const newsBoardUrl =
@@ -77,11 +76,7 @@ export default fp(
               })),
             };
 
-            return await collection?.updateOne(
-              { url: news.url },
-              { $set: news },
-              { upsert: true }
-            );
+            return await fastify.report(news);
           }
         )
       );
@@ -94,6 +89,6 @@ export default fp(
   },
   {
     name: "global-official",
-    dependencies: ["mongodb"],
+    dependencies: ["report"],
   }
 );

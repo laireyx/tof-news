@@ -56,6 +56,6 @@ export default fp(
   },
   {
     name: "twitter/streaming",
-    dependencies: ["twitter/init-api"],
+    dependencies: ["twitter/init-api", "report"],
   }
 );

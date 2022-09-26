@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fastify_plugin_1 = __importDefault(require("fastify-plugin"));
 exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
     const got = await import("got").then((module) => module.default);
-    const collection = fastify.mongo.db?.collection("news");
     const FETCH_INTERVAL = 60 * 1000;
     const newsBoardUrl = "https://na.levelinfiniteapps.com/api/trpc/trpc.wegame_app_global.information_feeds_svr.InformationFeedsSvr/GetContentByLabel";
     const watch = async () => {
@@ -41,7 +40,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
                     url: pictureUrl,
                 })),
             };
-            return await collection?.updateOne({ url: news.url }, { $set: news }, { upsert: true });
+            return await fastify.report(news);
         }));
         setTimeout(() => watch(), FETCH_INTERVAL);
     };
@@ -49,5 +48,5 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
     console.log("[@plugin/global-official] Interval fetch installed");
 }, {
     name: "global-official",
-    dependencies: ["mongodb"],
+    dependencies: ["report"],
 });

@@ -48,5 +48,5 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
     console.log("[@plugin/twitter] Stream connected");
 }, {
     name: "twitter/streaming",
-    dependencies: ["twitter/init-api"],
+    dependencies: ["twitter/init-api", "report"],
 });
