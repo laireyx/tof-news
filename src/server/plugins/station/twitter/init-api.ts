@@ -26,8 +26,7 @@ export default fp(
     }
 
     const usernameRules = stations
-      .map((account) => account.username)
-      .map((username) => `from:${username}`)
+      .map((account) => `from:${account.username}`)
       .join(" OR ");
 
     await client.v2.updateStreamRules({

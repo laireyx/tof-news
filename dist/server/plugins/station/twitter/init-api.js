@@ -19,8 +19,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
         });
     }
     const usernameRules = stations_json_1.default
-        .map((account) => account.username)
-        .map((username) => `from:${username}`)
+        .map((account) => `from:${account.username}`)
         .join(" OR ");
     await client.v2.updateStreamRules({
         add: [{ value: usernameRules }],
