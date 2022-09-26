@@ -44,7 +44,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
                 author: user.screen_name,
                 authorImg: user.profile_image_url,
                 content: text_raw,
-                timestamp: timestamp,
+                timestamp,
                 media: pic_ids?.map((picId) => ({
                     type: "photo",
                     url: pic_infos?.[picId].original.url,

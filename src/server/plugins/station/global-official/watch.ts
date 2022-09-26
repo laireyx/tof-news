@@ -76,7 +76,7 @@ export default fp(
                 source: "Homepage/EN",
                 author,
                 content: content_part + "...",
-                timestamp: new Date(1000 * +pub_timestamp),
+                timestamp,
                 media: pic_urls.map((pictureUrl) => ({
                   type: "photo",
                   url: pictureUrl,
