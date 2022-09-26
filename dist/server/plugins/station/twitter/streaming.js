@@ -32,7 +32,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
         const authorUser = tweet.includes?.users?.find((user) => user.id === authorId);
         const news = {
             url: `https://twitter.com/${authorUser?.username}/status/${tweet.data.id}`,
-            source: sourceMap.get(authorUser?.username.toLowerCase() ?? "") ?? "Twitter",
+            source: sourceMap.get(authorUser?.username.toLowerCase()) ?? "Twitter",
             author: `${authorUser?.name}(@${authorUser?.username})`,
             authorImg: authorUser?.profile_image_url,
             content: tweet.data.text,

@@ -11,7 +11,7 @@ import { News } from "../../report";
  */
 export default fp(
   async function (fastify, opts) {
-    const sourceMap: Map<string, string> = new Map();
+    const sourceMap: Map<string | undefined, string> = new Map();
 
     stations.forEach((station) => {
       sourceMap.set(station.username.toLowerCase(), station.source);
@@ -37,8 +37,7 @@ export default fp(
 
       const news: News = {
         url: `https://twitter.com/${authorUser?.username}/status/${tweet.data.id}`,
-        source:
-          sourceMap.get(authorUser?.username.toLowerCase() ?? "") ?? "Twitter",
+        source: sourceMap.get(authorUser?.username.toLowerCase()) ?? "Twitter",
         author: `${authorUser?.name}(@${authorUser?.username})`,
         authorImg: authorUser?.profile_image_url,
         content: tweet.data.text,

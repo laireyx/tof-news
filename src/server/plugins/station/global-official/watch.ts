@@ -56,32 +56,34 @@ export default fp(
         })
         .json();
 
-      await result.data.info_content.map(
-        async ({
-          content_id,
-          author,
-          content_part,
-          pub_timestamp,
-          pic_urls,
-        }) => {
-          const news: News = {
-            url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
-            source: "Homepage/EN",
+      await Promise.all(
+        result.data.info_content.map(
+          async ({
+            content_id,
             author,
-            content: content_part + "...",
-            timestamp: new Date(1000 * +pub_timestamp),
-            media: pic_urls.map((pictureUrl) => ({
-              type: "photo",
-              url: pictureUrl,
-            })),
-          };
+            content_part,
+            pub_timestamp,
+            pic_urls,
+          }) => {
+            const news: News = {
+              url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
+              source: "Homepage/EN",
+              author,
+              content: content_part + "...",
+              timestamp: new Date(1000 * +pub_timestamp),
+              media: pic_urls.map((pictureUrl) => ({
+                type: "photo",
+                url: pictureUrl,
+              })),
+            };
 
-          return await collection?.updateOne(
-            { url: news.url },
-            { $set: news },
-            { upsert: true }
-          );
-        }
+            return await collection?.updateOne(
+              { url: news.url },
+              { $set: news },
+              { upsert: true }
+            );
+          }
+        )
       );
 
       setTimeout(() => watch(), FETCH_INTERVAL);

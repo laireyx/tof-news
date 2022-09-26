@@ -29,7 +29,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
             },
         })
             .json();
-        await result.data.info_content.map(async ({ content_id, author, content_part, pub_timestamp, pic_urls, }) => {
+        await Promise.all(result.data.info_content.map(async ({ content_id, author, content_part, pub_timestamp, pic_urls, }) => {
             const news = {
                 url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
                 source: "Homepage/EN",
@@ -42,7 +42,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
                 })),
             };
             return await collection?.updateOne({ url: news.url }, { $set: news }, { upsert: true });
-        });
+        }));
         setTimeout(() => watch(), FETCH_INTERVAL);
     };
     watch();

@@ -29,7 +29,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
             followRedirect: true,
         })
             .json();
-        await result.data.list.map(async ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => {
+        await Promise.all(result.data.list.map(async ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => {
             const news = {
                 url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
                 source: "Weibo/CN",
@@ -44,7 +44,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
                 })) ?? [],
             };
             return await collection?.updateOne({ url: news.url }, { $set: news }, { upsert: true });
-        });
+        }));
         setTimeout(() => watch(), FETCH_INTERVAL);
     };
     watch();

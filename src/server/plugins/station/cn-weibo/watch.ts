@@ -63,29 +63,31 @@ export default fp(
         })
         .json();
 
-      await result.data.list.map(
-        async ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => {
-          const news: News = {
-            url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
-            source: "Weibo/CN",
-            author: user.screen_name,
-            authorImg: user.profile_image_url,
-            content: text_raw,
-            timestamp: new Date(created_at),
-            media:
-              pic_ids?.map((picId) => ({
-                type: "photo",
-                url: pic_infos?.[picId].original.url,
-                previewUrl: pic_infos?.[picId].thumbnail.url,
-              })) ?? [],
-          };
+      await Promise.all(
+        result.data.list.map(
+          async ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => {
+            const news: News = {
+              url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
+              source: "Weibo/CN",
+              author: user.screen_name,
+              authorImg: user.profile_image_url,
+              content: text_raw,
+              timestamp: new Date(created_at),
+              media:
+                pic_ids?.map((picId) => ({
+                  type: "photo",
+                  url: pic_infos?.[picId].original.url,
+                  previewUrl: pic_infos?.[picId].thumbnail.url,
+                })) ?? [],
+            };
 
-          return await collection?.updateOne(
-            { url: news.url },
-            { $set: news },
-            { upsert: true }
-          );
-        }
+            return await collection?.updateOne(
+              { url: news.url },
+              { $set: news },
+              { upsert: true }
+            );
+          }
+        )
       );
 
       setTimeout(() => watch(), FETCH_INTERVAL);
