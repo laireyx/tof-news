@@ -36,6 +36,7 @@ export default fp(
   async function (fastify, opts) {
     const got = await import("got").then((module) => module.default);
     const FETCH_INTERVAL = 60 * 1000;
+    let lastTimestamp = new Date(0);
 
     const newsBoardUrl =
       "https://weibo.com/ajax/statuses/mymblog?uid=7455256856";
@@ -63,26 +64,36 @@ export default fp(
         .json();
 
       await Promise.all(
-        result.data.list.map(
-          async ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => {
-            const news: News = {
-              url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
-              source: "Weibo/CN",
-              author: user.screen_name,
-              authorImg: user.profile_image_url,
-              content: text_raw,
-              timestamp: new Date(created_at),
-              media:
-                pic_ids?.map((picId) => ({
-                  type: "photo",
-                  url: pic_infos?.[picId].original.url,
-                  previewUrl: pic_infos?.[picId].thumbnail.url,
-                })) ?? [],
-            };
+        result.data.list
+          .sort(
+            (a, b) =>
+              new Date(a.created_at).getTime() -
+              new Date(b.created_at).getTime()
+          )
+          .map(
+            async ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => {
+              const timestamp = new Date(created_at);
+              if (timestamp < lastTimestamp) return;
+              else lastTimestamp = timestamp;
 
-            return await fastify.report(news);
-          }
-        )
+              const news: News = {
+                url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
+                source: "Weibo/CN",
+                author: user.screen_name,
+                authorImg: user.profile_image_url,
+                content: text_raw,
+                timestamp: timestamp,
+                media:
+                  pic_ids?.map((picId) => ({
+                    type: "photo",
+                    url: pic_infos?.[picId].original.url,
+                    previewUrl: pic_infos?.[picId].thumbnail.url,
+                  })) ?? [],
+              };
+
+              return await fastify.report(news);
+            }
+          )
       );
 
       setTimeout(() => watch(), FETCH_INTERVAL);
