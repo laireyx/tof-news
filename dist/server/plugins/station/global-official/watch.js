@@ -33,10 +33,9 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
             .sort((a, b) => +a.pub_timestamp - +b.pub_timestamp)
             .map(async ({ content_id, author, content_part, pub_timestamp, pic_urls, }) => {
             const timestamp = new Date(1000 * +pub_timestamp);
-            if (timestamp < lastTimestamp)
+            if (timestamp <= lastTimestamp)
                 return;
-            else
-                lastTimestamp = timestamp;
+            lastTimestamp = timestamp;
             const news = {
                 url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
                 source: "Homepage/EN",

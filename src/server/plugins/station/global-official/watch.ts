@@ -68,8 +68,8 @@ export default fp(
               pic_urls,
             }) => {
               const timestamp = new Date(1000 * +pub_timestamp);
-              if (timestamp < lastTimestamp) return;
-              else lastTimestamp = timestamp;
+              if (timestamp <= lastTimestamp) return;
+              lastTimestamp = timestamp;
 
               const news: News = {
                 url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,

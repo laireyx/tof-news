@@ -34,10 +34,9 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
             new Date(b.created_at).getTime())
             .map(async ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => {
             const timestamp = new Date(created_at);
-            if (timestamp < lastTimestamp)
+            if (timestamp <= lastTimestamp)
                 return;
-            else
-                lastTimestamp = timestamp;
+            lastTimestamp = timestamp;
             const news = {
                 url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
                 source: "Weibo/CN",

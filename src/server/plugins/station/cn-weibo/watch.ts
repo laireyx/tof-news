@@ -73,8 +73,8 @@ export default fp(
           .map(
             async ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => {
               const timestamp = new Date(created_at);
-              if (timestamp < lastTimestamp) return;
-              else lastTimestamp = timestamp;
+              if (timestamp <= lastTimestamp) return;
+              lastTimestamp = timestamp;
 
               const news: News = {
                 url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
