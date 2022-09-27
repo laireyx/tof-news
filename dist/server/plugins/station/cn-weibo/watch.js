@@ -38,7 +38,7 @@ exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
                 return;
             lastTimestamp = timestamp;
             const news = {
-                url: `http://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
+                url: `https://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
                 source: "Weibo/CN",
                 author: user.screen_name,
                 authorImg: user.profile_image_url,
