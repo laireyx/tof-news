@@ -6,7 +6,7 @@ interface INewsListQuery {
 
 export default async function (fastify: FastifyInstance) {
   const collection = fastify.mongo.db?.collection("news");
-  const NEWS_PER_PAGE = 20;
+  const NEWS_PER_PAGE = 10;
 
   fastify.get<{ Querystring: INewsListQuery }>(
     "/",
