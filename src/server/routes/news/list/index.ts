@@ -2,7 +2,7 @@ import type { FastifyInstance } from "fastify";
 
 interface INewsListQuery {
   p: number;
-  source: "all" | "Twitter" | "Weibo";
+  source: "" | "Twitter" | "Weibo";
 }
 
 export default async function (fastify: FastifyInstance) {
@@ -18,7 +18,7 @@ export default async function (fastify: FastifyInstance) {
           done(new Error("Invalid page number"));
         }
 
-        if (source !== "all" && source !== "Twitter" && source !== "Weibo") {
+        if (source !== "" && source !== "Twitter" && source !== "Weibo") {
           done(new Error("Invalid news source"));
         }
 

@@ -12,6 +12,7 @@ const twitter_api_v2_1 = require("twitter-api-v2");
  * @see https://github.com/fastify/fastify-sensible
  */
 exports.default = (0, fastify_plugin_1.default)(async function (fastify, opts) {
+    return;
     const sourceMap = new Map();
     stations_json_1.default.forEach((station) => {
         sourceMap.set(station.username.toLowerCase(), station.source);

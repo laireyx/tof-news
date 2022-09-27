@@ -16,10 +16,11 @@ async function default_1(fastify) {
         },
     }, async function (request) {
         const { p, source } = request.query;
+        console.log(`^${source}`);
         const newsArray = await collection
             ?.find({
             source: {
-                $regex: `^${source}`,
+                $regex: `^${source === "all" ? "" : source}`,
             },
         })
             .sort({ timestamp: -1 })

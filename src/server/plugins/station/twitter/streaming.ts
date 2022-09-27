@@ -11,6 +11,7 @@ import { News } from "../../report";
  */
 export default fp(
   async function (fastify, opts) {
+    return;
     const sourceMap: Map<string | undefined, string> = new Map();
 
     stations.forEach((station) => {
