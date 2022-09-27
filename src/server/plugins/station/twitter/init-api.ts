@@ -13,7 +13,6 @@ declare module "fastify" {
 
 export default fp(
   async function (fastify, opts) {
-    return;
     const client = new TwitterApi(env.TWITTER_API_BEARER ?? "");
 
     // Get and delete old rules if needed
