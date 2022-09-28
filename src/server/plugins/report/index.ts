@@ -22,6 +22,7 @@ type NewsMedia = ImageMedia | VideoMedia | MiscMedia;
 
 type News = {
   url: string;
+  lang: string;
   source: string;
   author: string;
   authorImg?: string;

@@ -11,10 +11,13 @@ import { News } from "../../report";
  */
 export default fp(
   async function (fastify, opts) {
-    const sourceMap: Map<string | undefined, string> = new Map();
+    const stationMap: Map<
+      string | undefined,
+      { source: string; lang: string }
+    > = new Map();
 
     stations.forEach((station) => {
-      sourceMap.set(station.username.toLowerCase(), station.source);
+      stationMap.set(station.username.toLowerCase(), station);
     });
 
     const stream = await fastify.twitterApi.v2.searchStream({
@@ -41,9 +44,13 @@ export default fp(
         (user) => user.id === authorId
       );
 
+      const { lang = "", source = "Twitter" } =
+        stationMap.get(authorUser?.username.toLowerCase()) ?? {};
+
       const news: News = {
         url: `https://twitter.com/${authorUser?.username}/status/${tweet.data.id}`,
-        source: sourceMap.get(authorUser?.username.toLowerCase()) ?? "Twitter",
+        lang,
+        source,
         author: `${authorUser?.name}(@${authorUser?.username})`,
         authorImg: authorUser?.profile_image_url,
         content: tweet.data.text,

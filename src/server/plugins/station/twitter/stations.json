@@ -1,6 +1,6 @@
 [
-  { "username": "ToF_EN_Official", "source": "Twitter/EN" },
-  { "username": "ToF_JP", "source": "Twitter/JP" },
-  { "username": "Sova_ToF", "source": "Unofficial@Twitter/Leak" },
-  { "username": "_afrodiy", "source": "Unofficial@Twitter/Leak" }
+  { "username": "ToF_EN_Official", "source": "Twitter/EN", "lang": "en" },
+  { "username": "ToF_JP", "source": "Twitter/JP", "lang": "ja-JP" },
+  { "username": "Sova_ToF", "source": "Unofficial@Twitter/Leak", "lang": "en" },
+  { "username": "_afrodiy", "source": "Unofficial@Twitter/Leak", "lang": "en" }
 ]

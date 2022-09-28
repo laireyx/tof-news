@@ -55,6 +55,7 @@ export default fp(
             const timestamp = new Date(1000 * +pub_timestamp);
             return {
               url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
+              lang: "en",
               source: "Homepage/EN",
               author,
               content: content_part + "...",

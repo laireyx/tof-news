@@ -59,6 +59,7 @@ export default fp(
         return resp.data.list.map(
           ({ mid, user, created_at, text_raw, pic_ids, pic_infos }) => ({
             url: `https://api.weibo.com/2/statuses/go?uid=${user.id}&id=${mid}`,
+            lang: "zh-CN",
             source: "Weibo/CN",
             author: user.screen_name,
             authorImg: user.profile_image_url,
