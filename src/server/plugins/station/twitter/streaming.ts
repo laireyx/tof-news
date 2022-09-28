@@ -25,7 +25,13 @@ export default fp(
       ],
       autoConnect: true,
       "user.fields": ["name", "username", "profile_image_url"],
-      "media.fields": ["type", "alt_text", "preview_image_url", "url"],
+      "media.fields": [
+        "type",
+        "alt_text",
+        "preview_image_url",
+        "url",
+        "variants",
+      ],
       "tweet.fields": ["id", "text", "attachments", "created_at"],
     });
 
@@ -43,11 +49,22 @@ export default fp(
         content: tweet.data.text,
         timestamp: new Date(tweet.data.created_at ?? Date.now()),
         media:
-          tweet.includes?.media?.map(({ type, url, preview_image_url }) => ({
-            type,
-            url,
-            previewUrl: preview_image_url,
-          })) ?? [],
+          tweet.includes?.media?.map(
+            ({ type, url, preview_image_url: previewUrl, variants }) => {
+              if (type === "video")
+                return {
+                  type,
+                  url: variants?.pop()?.url,
+                  previewUrl,
+                };
+
+              return {
+                type,
+                url,
+                previewUrl,
+              };
+            }
+          ) ?? [],
       };
       fastify.report(news);
     });
