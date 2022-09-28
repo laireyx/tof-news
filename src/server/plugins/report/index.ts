@@ -2,7 +2,7 @@ import fp from "fastify-plugin";
 
 type NewsMedia = {
   type: "photo" | "animated_gif" | string;
-  url?: string;
+  url?: string | string[];
   previewUrl?: string;
 };
 

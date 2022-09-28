@@ -54,7 +54,9 @@ export default fp(
               if (type === "video")
                 return {
                   type,
-                  url: variants?.pop()?.url,
+                  url: variants
+                    ?.filter(({ content_type }) => content_type === "video/mp4")
+                    ?.map(({ url }) => url),
                   previewUrl,
                 };
 
