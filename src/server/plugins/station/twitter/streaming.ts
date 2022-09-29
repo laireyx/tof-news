@@ -4,11 +4,6 @@ import fp from "fastify-plugin";
 import { ETwitterStreamEvent } from "twitter-api-v2";
 import { News } from "../../report";
 
-/**
- * This plugins adds some utilities to handle http errors
- *
- * @see https://github.com/fastify/fastify-sensible
- */
 export default fp(
   async function (fastify, opts) {
     const stationMap: Map<
@@ -38,6 +33,8 @@ export default fp(
       "tweet.fields": ["id", "text", "attachments", "created_at"],
     });
 
+    stream.autoReconnect = true;
+
     stream.on(ETwitterStreamEvent.Data, async (tweet) => {
       const authorId = tweet.data.author_id;
       const authorUser = tweet.includes?.users?.find(
@@ -58,18 +55,13 @@ export default fp(
         media:
           tweet.includes?.media?.map(
             ({ type, url, preview_image_url: previewUrl, variants }) => {
-              if (type === "video")
-                return {
-                  type,
-                  url: variants
-                    ?.filter(({ content_type }) => content_type === "video/mp4")
-                    ?.map(({ url }) => url),
-                  previewUrl,
-                };
-
               return {
                 type,
-                url,
+                url:
+                  // Variants are for video.
+                  variants
+                    ?.filter(({ content_type }) => content_type === "video/mp4")
+                    ?.map(({ url }) => url) ?? url,
                 previewUrl,
               };
             }
