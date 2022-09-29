@@ -79,7 +79,7 @@ export default fp(
     console.log("[@plugin/cn-weibo] Interval fetch installed");
   },
   {
-    name: "cn-weibo",
+    name: "interval-fetch/cn-weibo",
     dependencies: ["interval-fetch"],
   }
 );

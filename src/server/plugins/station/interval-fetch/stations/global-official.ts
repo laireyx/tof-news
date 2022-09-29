@@ -73,7 +73,7 @@ export default fp(
     console.log("[@plugin/global-official] Interval fetch installed");
   },
   {
-    name: "global-official",
+    name: "interval-fetch/global-official",
     dependencies: ["interval-fetch"],
   }
 );

@@ -20,7 +20,7 @@ export default fp(
     if (existingRules.data?.length) {
       await client.v2.updateStreamRules({
         delete: {
-          ids: existingRules.data.map((existingRule) => existingRule.id),
+          ids: existingRules.data.map(({ id }) => id),
         },
       });
     }
@@ -34,7 +34,7 @@ export default fp(
     });
 
     fastify.decorate("twitterApi", client);
-    console.log("[@plugin/twitter] Stream rules loaded");
+    console.log(`[@plugin/twitter] Stream rules loaded: ${usernameRules}`);
   },
   {
     name: "twitter/init-api",
