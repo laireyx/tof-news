@@ -25,50 +25,53 @@ type BoardResponse = {
   msg: string;
 };
 
+function newsify(resp: BoardResponse) {
+  return resp.data.info_content.map(
+    ({ content_id, author, content_part, pub_timestamp, pic_urls }) => ({
+      url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
+      lang: "en",
+      source: "Homepage/EN",
+      author,
+      content: content_part + "...",
+      timestamp: new Date(1000 * +pub_timestamp),
+      media: pic_urls.map((pictureUrl) => ({
+        type: "photo",
+        url: pictureUrl,
+      })),
+    })
+  );
+}
+
 export default fp(
   async function (fastify, opts) {
-    await fastify.intervalFetch({
-      resource:
-        "https://na.levelinfiniteapps.com/api/trpc/trpc.wegame_app_global.information_feeds_svr.InformationFeedsSvr/GetContentByLabel",
-      interval: 60 * 1000,
-      gotOptions: {
-        method: "POST",
-        headers: {
-          "x-areaid": "na",
-          "x-gameid": "4",
-          "x-language": "en",
-          "x-source": "pc_web",
-        },
-        json: {
-          gameid: "4",
-          offset: 0,
-          get_num: 10,
-          primary_label_id: "158",
-          secondary_label_id: "260",
-          use_default_language: false,
-          language: ["en"],
-        },
-      },
-      newsify(resp: BoardResponse) {
-        return resp.data.info_content.map(
-          ({ content_id, author, content_part, pub_timestamp, pic_urls }) => {
-            const timestamp = new Date(1000 * +pub_timestamp);
-            return {
-              url: `https://www.toweroffantasy-global.com/news-detail.html?content_id=${content_id}&`,
-              lang: "en",
-              source: "Homepage/EN",
-              author,
-              content: content_part + "...",
-              timestamp,
-              media: pic_urls.map((pictureUrl) => ({
-                type: "photo",
-                url: pictureUrl,
-              })),
-            };
-          }
-        );
-      },
-    });
+    const labels = ["260", "261"];
+    await Promise.all(
+      labels.map(async (label) => {
+        await fastify.intervalFetch({
+          resource:
+            "https://na.levelinfiniteapps.com/api/trpc/trpc.wegame_app_global.information_feeds_svr.InformationFeedsSvr/GetContentByLabel",
+          gotOptions: {
+            method: "POST",
+            headers: {
+              "x-areaid": "na",
+              "x-gameid": "4",
+              "x-language": "en",
+              "x-source": "pc_web",
+            },
+            json: {
+              gameid: "4",
+              offset: 0,
+              get_num: 20,
+              primary_label_id: "158",
+              secondary_label_id: label,
+              use_default_language: false,
+              language: ["en"],
+            },
+          },
+          newsify,
+        });
+      })
+    );
 
     console.log("[@plugin/global-official] Interval fetch installed");
   },

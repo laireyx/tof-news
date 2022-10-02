@@ -4,7 +4,7 @@ import { News } from "../../report";
 
 interface FetchOptions {
   resource: string;
-  interval: number;
+  interval?: number;
   gotOptions: any;
   newsify(resp: any): News[];
 }
@@ -20,7 +20,7 @@ export default fp(
     const got = await import("got").then((module) => module.default);
     fastify.decorate("intervalFetch", async function <
       T
-    >({ resource, gotOptions, interval, newsify }: FetchOptions) {
+    >({ resource, gotOptions, interval = 60 * 1000, newsify }: FetchOptions) {
       let lastTimestamp = new Date(0);
 
       const watchFunction = async () => {
