@@ -21,7 +21,6 @@ export default fp(
         "attachments.media_keys",
         "attachments.poll_ids",
       ],
-      autoConnect: true,
       "user.fields": ["name", "username", "profile_image_url"],
       "media.fields": [
         "type",
@@ -32,8 +31,6 @@ export default fp(
       ],
       "tweet.fields": ["id", "text", "attachments", "created_at"],
     });
-
-    stream.autoReconnect = true;
 
     stream.on(ETwitterStreamEvent.Data, async (tweet) => {
       const authorId = tweet.data.author_id;
@@ -69,6 +66,24 @@ export default fp(
       };
       fastify.report(news);
     });
+
+    stream.on(ETwitterStreamEvent.ReconnectLimitExceeded, async () => {
+      // Something went wrong: Just throw an error and die.
+      // Heroku will restart the project a few minutes later.
+      throw new Error("WTF Stream reconnection error.");
+    });
+
+    stream.on(ETwitterStreamEvent.Error, async (err) => {
+      console.error(err);
+      await stream.reconnect();
+    });
+
+    await stream.connect({
+      autoReconnect: true,
+      autoReconnectRetries: 20,
+      keepAliveTimeout: Infinity,
+    });
+    stream.keepAliveTimeoutMs = Infinity;
 
     console.log("[@plugin/twitter] Stream connected");
   },
