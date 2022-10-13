@@ -33,7 +33,7 @@ type News = {
 
 declare module "fastify" {
   interface FastifyInstance {
-    report: (news: News) => Promise<any>;
+    report: (news: News) => Promise<void>;
   }
 }
 
@@ -43,16 +43,18 @@ export default fp(
       console.log("[@plugin/report] News: ", JSON.stringify(news, null, 2));
 
       const newsCollection = fastify.mongo.db?.collection("news");
-      return await newsCollection?.updateOne(
+      await newsCollection?.updateOne(
         { url: news.url },
         { $set: news },
         { upsert: true }
       );
+
+      fastify.invalidateNews();
     });
   },
   {
     name: "report",
-    dependencies: ["mongodb"],
+    dependencies: ["news"],
   }
 );
 export { News };
