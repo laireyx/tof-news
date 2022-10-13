@@ -22,8 +22,12 @@ type FeedData = {
   articleItem: FeedArticle;
 };
 
-type FeedResponse = {
+type FeedResult = {
   data: FeedData[];
+};
+
+type FeedResponse = {
+  result: FeedResult;
 };
 
 const gotOptions = {
@@ -36,7 +40,7 @@ const gotOptions = {
 };
 
 function newsify(resp: FeedResponse) {
-  return resp.data.map(({ articleItem }) => {
+  return resp.result.data.map(({ articleItem }) => {
     const { articleId, createDateTime, userInfo, content, imgItems } =
       articleItem;
 
