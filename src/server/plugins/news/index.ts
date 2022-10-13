@@ -1,7 +1,13 @@
 import fp from "fastify-plugin";
 import type { News } from "../report/index";
 
-const NewsSources = ["", "Twitter", "Weibo", "Unofficial@Twitter"] as const;
+const NewsSources = [
+  "",
+  "Twitter",
+  "Homepage/EN",
+  "Homepage/CN",
+  "Unofficial@Twitter",
+] as const;
 
 type NewsListQuery = {
   p: number;
