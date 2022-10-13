@@ -72,6 +72,10 @@ export default fp(
       await stream.reconnect();
     });
 
+    stream.on(ETwitterStreamEvent.Reconnected, () => {
+      console.log("[@plugin/twitter] Stream reconnected");
+    });
+
     await stream.connect({
       autoReconnect: true,
       autoReconnectRetries: 20,
