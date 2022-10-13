@@ -79,6 +79,10 @@ export default fp(
     });
     stream.keepAliveTimeoutMs = Infinity;
 
+    fastify.addHook("onClose", () => {
+      stream.destroy();
+    });
+
     console.log("[@plugin/twitter] Stream connected");
   },
   {

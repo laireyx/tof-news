@@ -20,6 +20,10 @@ function start() {
   });
 
   server.listen({ port: +(env.PORT ?? "3000"), host: "0.0.0.0" });
+
+  process.once("SIGTERM", () => {
+    server.close();
+  });
 }
 
 export default start;
