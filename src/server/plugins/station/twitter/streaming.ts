@@ -67,12 +67,6 @@ export default fp(
       fastify.report(news);
     });
 
-    stream.on(ETwitterStreamEvent.ReconnectLimitExceeded, async () => {
-      // Something went wrong: Just throw an error and die.
-      // Heroku will restart the project a few minutes later.
-      throw new Error("WTF Stream reconnection error.");
-    });
-
     stream.on(ETwitterStreamEvent.Error, async (err) => {
       console.error(err);
       await stream.reconnect();
