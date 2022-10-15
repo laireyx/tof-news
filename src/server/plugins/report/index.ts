@@ -40,7 +40,7 @@ declare module "fastify" {
 export default fp(
   async function (fastify, opts) {
     fastify.decorate("report", async function (news: News) {
-      console.log("[@plugin/report] News: ", JSON.stringify(news, null, 2));
+      // console.log(`[@plugin/report] News: ${news.url}`);
 
       const newsCollection = fastify.mongo.db?.collection("news");
       await newsCollection?.updateOne(
