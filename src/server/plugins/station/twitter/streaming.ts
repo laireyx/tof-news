@@ -67,11 +67,6 @@ export default fp(
       fastify.report(news);
     });
 
-    stream.on(ETwitterStreamEvent.Error, (err) => {
-      console.error(err);
-      stream.reconnect();
-    });
-
     stream.on(ETwitterStreamEvent.Reconnected, () => {
       console.log("[@plugin/twitter] Stream reconnected");
     });
