@@ -67,9 +67,9 @@ export default fp(
       fastify.report(news);
     });
 
-    stream.on(ETwitterStreamEvent.Error, async (err) => {
+    stream.on(ETwitterStreamEvent.Error, (err) => {
       console.error(err);
-      await stream.reconnect();
+      stream.reconnect();
     });
 
     stream.on(ETwitterStreamEvent.Reconnected, () => {

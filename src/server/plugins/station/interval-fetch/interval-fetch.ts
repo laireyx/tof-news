@@ -24,22 +24,26 @@ export default fp(
       let lastTimestamp = new Date(0);
 
       const watchFunction = async () => {
-        const resp: T = await got(resource, gotOptions).json();
+        try {
+          const resp: T = await got(resource, gotOptions).json();
 
-        const newsList = newsify(resp).sort(
-          (newsA, newsB) =>
-            +new Date(newsA.timestamp).getTime() -
-            +new Date(newsB.timestamp).getTime()
-        );
+          const newsList = newsify(resp).sort(
+            (newsA, newsB) =>
+              +new Date(newsA.timestamp).getTime() -
+              +new Date(newsB.timestamp).getTime()
+          );
 
-        await Promise.all(
-          newsList.map(async (news) => {
-            if (news.timestamp <= lastTimestamp) return;
-            lastTimestamp = news.timestamp;
+          await Promise.all(
+            newsList.map(async (news) => {
+              if (news.timestamp <= lastTimestamp) return;
+              lastTimestamp = news.timestamp;
 
-            return await fastify.report(news);
-          })
-        );
+              return await fastify.report(news);
+            })
+          );
+        } catch (err) {
+          console.error(err);
+        }
 
         setTimeout(() => watchFunction, interval);
       };
