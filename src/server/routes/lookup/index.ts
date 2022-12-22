@@ -16,9 +16,8 @@ export default async function (fastify: FastifyInstance) {
         done(undefined);
       },
     },
-    async function (request) {
-      fastify.tofLookup(request.query.uid);
-      return 0;
+    function (request) {
+      return fastify.tofLookup(request.query.uid);
     }
   );
 }
