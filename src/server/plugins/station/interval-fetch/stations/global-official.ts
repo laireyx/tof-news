@@ -34,7 +34,7 @@ function newsify(resp: BoardResponse) {
       author,
       content: content_part + "...",
       timestamp: new Date(1000 * +pub_timestamp),
-      media: pic_urls.map((pictureUrl) => ({
+      media: (pic_urls ?? []).map((pictureUrl) => ({
         type: "photo",
         url: pictureUrl,
       })),
