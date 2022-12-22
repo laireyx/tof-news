@@ -129,16 +129,17 @@ export default fp(
         const queryResult = await collection?.findOne({
           uid,
         });
+
         if (
           queryResult &&
           queryResult.timestamp + +(env.LOOKUP_LIMIT ?? "3600000") > Date.now()
         )
-          return { success: true, data: queryResult };
+          return { data: queryResult };
 
         lookupSocket.send(
           Buffer.concat([LOOKUP, Buffer.from(uid + "\0\0\0", "utf-8")])
         );
-        return { success: false };
+        return { queued: true };
       }
     );
   },

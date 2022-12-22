@@ -53,7 +53,7 @@ type LookupRecord = {
 };
 
 type LookupResponse = {
-  success: boolean;
+  queued?: boolean;
   data?: LookupRecord;
 };
 
