@@ -72,6 +72,7 @@ export default fp(
       for (let i = 0; i < 3; i++) {
         const { weaponStr } = reader.destruct<{ weaponStr: string }>([
           { key: "weaponStr", type: "str" },
+          { type: "uint[]", count: 11 },
         ]);
 
         const matchResult = weaponStr.match(
@@ -82,12 +83,14 @@ export default fp(
 
           record.data.weapons.push({ name, level: +level, stars: +stars });
         }
-        reader.skip(44);
       }
 
       for (let i = 0; i < 20; i++) {
         const { equipStr } = reader.destruct<{ equipStr: string }>([
           { key: "equipStr", type: "str" },
+          { type: "uint" },
+          { type: "str" },
+          { type: "uint[]", count: 7 },
         ]);
 
         const matchResult = equipStr.match(/(.+)#(\d+)#(.+)*#(\d+)#/);
@@ -112,12 +115,6 @@ export default fp(
             stars: +stars,
           });
         } else break;
-
-        reader.destruct([
-          { type: "uint" },
-          { type: "str" },
-          { type: "uint[]", count: 7 },
-        ]);
       }
 
       collection?.updateOne({ uid: uid }, { $set: record }, { upsert: true });
