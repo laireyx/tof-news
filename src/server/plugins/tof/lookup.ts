@@ -131,7 +131,7 @@ export default fp(
         });
         if (
           queryResult &&
-          queryResult.timestamp + +(env.LOOKUP_LIMIT ?? "1000") > Date.now()
+          queryResult.timestamp + +(env.LOOKUP_LIMIT ?? "3600000") > Date.now()
         )
           return { success: true, data: queryResult };
 
