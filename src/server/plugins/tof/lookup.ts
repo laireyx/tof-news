@@ -38,15 +38,22 @@ export default fp(
 
       if (!data) return;
 
-      reader.skip(124);
-      reader.readString(); // Location: ex. Vera_City or QRSL_P
-      reader.skip(44);
+      const { name, uid } = reader.destruct<{ name: string; uid: string }>([
+        { type: "uint[]", count: 31 },
+        { type: "str" },
+        { type: "uint" },
+        { key: "name", type: "str" },
+        { type: "uint" },
+        { type: "str" },
+        { type: "uint" },
+        { key: "uid", type: "str" },
+      ]);
 
-      const uid = reader.readString();
-      if (!uid) return;
+      if (name === "" || uid === "") return;
 
       const record: LookupRecord = {
         uid,
+        name,
         timestamp: Date.now(),
         data: {
           weapons: [],
@@ -124,7 +131,7 @@ export default fp(
         });
         if (
           queryResult &&
-          queryResult.timestamp + +(env.LOOKUP_LIMIT ?? "3600000") > Date.now()
+          queryResult.timestamp + +(env.LOOKUP_LIMIT ?? "1000") > Date.now()
         )
           return { success: true, data: queryResult };
 

@@ -44,6 +44,7 @@ type EquipmentStat = {
 
 type LookupRecord = {
   uid: string;
+  name: string;
   timestamp: number;
   data: {
     weapons: WeaponStat[];
