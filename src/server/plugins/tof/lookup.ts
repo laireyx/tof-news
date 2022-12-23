@@ -4,6 +4,9 @@ import {
   EquipmentOption,
   LookupRecord,
   LookupResponse,
+  EquipmentOptionElement,
+  EquipmentOptionValue,
+  EquipmentOptionAdjust,
 } from "../../tof/lookup";
 import TofQueue from "../../tof/queue";
 import TofReader from "../../tof/reader";
@@ -121,13 +124,32 @@ export default fp(
 
             const options = optionsStr
               .split("|")
-              .map<EquipmentOption>((eachOption) => {
+              .map((eachOption): EquipmentOption => {
                 const [optionType, optionAmount] = eachOption.split(";");
 
-                return {
-                  type: optionType.slice(2),
-                  amount: optionAmount.slice(2),
-                };
+                const match = optionType
+                  .slice(2)
+                  .match(
+                    /(Common|Element|Phy|Thunder|Fire|Ice|Superpower)?(Atk|Def|MaxHealth|Crit)(Added|Mult)?/
+                  );
+
+                if (match) {
+                  const [_, element, value, adjust] = match as [
+                    any,
+                    EquipmentOptionElement,
+                    EquipmentOptionValue,
+                    EquipmentOptionAdjust
+                  ];
+
+                  return {
+                    element,
+                    value,
+                    adjust: adjust ?? "Added", // ElementDef does not come with Added
+                    amount: optionAmount.slice(2),
+                  };
+                }
+
+                return {};
               });
 
             record.data.equipments.push({
