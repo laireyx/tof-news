@@ -48,15 +48,9 @@ export default fp(
       const reader = new TofReader(lookupSocket.socket);
 
       // Consume Server Hello
-      if (reader.readableLength === 340) {
-        console.log("Consuming 340", reader.readableLength);
-        reader.skip();
-      }
+      if (reader.readableLength === 340) reader.skip();
 
-      if (reader.readableLength < 2048) {
-        console.log("Lookup is not prepared yet:", reader.readableLength);
-        return;
-      }
+      if (reader.readableLength < 2048) return;
 
       const { name, uid } = reader.destruct<{
         name: string;
