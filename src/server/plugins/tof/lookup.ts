@@ -46,8 +46,10 @@ export default fp(
 
     lookupSocket.on("readable", async () => {
       // Consume Server Hello
-      if (lookupSocket.socket.readableLength === 340)
+      if (lookupSocket.socket.readableLength === 340) {
+        console.log("Consuming 340", lookupSocket.socket.readableLength);
         lookupSocket.socket.read();
+      }
 
       if (lookupSocket.socket.readableLength < 2048) {
         console.log(
