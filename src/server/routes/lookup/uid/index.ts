@@ -1,12 +1,12 @@
 import type { FastifyInstance } from "fastify";
-import { LookupParams } from "../../tof/params";
+import { LookupByUidParams } from "../../../tof/params";
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get<{ Querystring: LookupParams }>(
-    "/",
+  fastify.get<{ Params: LookupByUidParams }>(
+    "/:uid",
     {
       preValidation: (request, reply, done) => {
-        const { uid } = request.query;
+        const { uid } = request.params;
         if (uid.length !== 17) {
           done(new Error("Invalid UID"));
         } else if (uid.match(/[^\d]/)) {
@@ -17,7 +17,7 @@ export default async function (fastify: FastifyInstance) {
       },
     },
     function (request) {
-      return fastify.tofLookup(request.query.uid);
+      return fastify.tofLookupByUid(request.params.uid);
     }
   );
 }

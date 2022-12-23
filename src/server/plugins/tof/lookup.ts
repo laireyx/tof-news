@@ -7,10 +7,12 @@ import {
 } from "../../tof/lookup";
 import TofReader from "../../tof/reader";
 import TofSocket from "../../tof/socket";
+import { padString } from "../../tof/util";
 
 declare module "fastify" {
   interface FastifyInstance {
-    tofLookup: (uid: string) => Promise<LookupResponse>;
+    tofLookupByUid: (uid: string) => Promise<LookupResponse>;
+    tofLookupByName: (nickname: string) => Promise<LookupResponse>;
   }
 }
 
@@ -121,7 +123,7 @@ export default fp(
     });
 
     fastify.decorate(
-      "tofLookup",
+      "tofLookupByUid",
       async function (uid: string): Promise<LookupResponse> {
         const queryResult = await collection?.findOne({
           uid,
@@ -133,10 +135,25 @@ export default fp(
         )
           return { data: queryResult };
 
-        lookupSocket.send(
-          Buffer.concat([LOOKUP, Buffer.from(uid + "\0\0\0", "utf-8")])
-        );
+        lookupSocket.send(Buffer.concat([LOOKUP, padString(uid)]));
         return { queued: true };
+      }
+    );
+
+    fastify.decorate(
+      "tofLookupByName",
+      async function (name: string): Promise<LookupResponse> {
+        const queryResult = await collection?.findOne({
+          name,
+        });
+
+        if (
+          queryResult &&
+          queryResult.timestamp + +(env.LOOKUP_LIMIT ?? "3600000") > Date.now()
+        )
+          return { data: queryResult };
+
+        return await fastify.tofScan(name);
       }
     );
   },

@@ -100,7 +100,7 @@ export default fp(
 
         if (scanQueue.has(nickname)) {
           scanQueue.delete(nickname);
-          fastify.tofLookup(uid);
+          fastify.tofLookupByUid(uid);
 
           break;
         }
