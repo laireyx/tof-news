@@ -45,16 +45,20 @@ export default fp(
     });
 
     lookupSocket.on("readable", async () => {
+      // Consume Server Hello
+      if (lookupSocket.socket.readableLength === 340)
+        lookupSocket.socket.read();
+
+      if (lookupSocket.socket.readableLength < 3072) return;
+
       const reader = new TofReader(lookupSocket.socket);
 
-      const { padding, location, name, uid } = reader.destruct<{
-        padding: number[];
-        location: string;
+      const { name, uid } = reader.destruct<{
         name: string;
         uid: string;
       }>([
-        { key: "padding", type: "uint[]", count: 31 },
-        { key: "location", type: "str" }, // Current Location
+        { type: "uint[]", count: 31 },
+        { type: "str" }, // Current Location
         { type: "uint" },
         { key: "name", type: "str" },
         { type: "uint" },

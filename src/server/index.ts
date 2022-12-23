@@ -9,6 +9,7 @@ function start() {
 
   server.register(AutoLoad, {
     dir: path.join(__dirname, "plugins"),
+    ignorePattern: env.BLOCK_PLUGIN ? new RegExp(env.BLOCK_PLUGIN) : undefined,
   });
 
   server.register(AutoLoad, {
