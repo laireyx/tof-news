@@ -114,7 +114,7 @@ export default fp(
           return { queued: false, num: -1 };
         }
 
-        scanQueue.add(nickname);
+        if (!scanQueue.has(nickname)) scanQueue.add(nickname);
         await scanSocket.send(scanPacket(nickname));
 
         return { queued: true, num: scanQueue.size };

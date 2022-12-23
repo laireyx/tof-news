@@ -152,7 +152,7 @@ export default fp(
         )
           return { data: queryResult };
 
-        lookupQueue.add(uid);
+        if (!lookupQueue.has(uid)) lookupQueue.add(uid);
         lookupSocket.send(Buffer.concat([LOOKUP, padString(uid)]));
         return { queued: true, num: 1 };
       }
