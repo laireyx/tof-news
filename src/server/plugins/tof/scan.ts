@@ -106,6 +106,7 @@ export default fp(
 
         if (name === "" || uid === "") break;
 
+        console.log("Scan result: ", name, uid);
         fastify.tofLookupByUid(uid);
       }
       scanQueue.next();

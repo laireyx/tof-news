@@ -48,7 +48,10 @@ export default fp(
       const data = lookupSocket.recv();
       const reader = new TofReader(data);
 
-      if (!data) return;
+      if (!data) {
+        lookupQueue.next();
+        return;
+      }
 
       const { name, uid } = reader.destruct<{ name: string; uid: string }>([
         { type: "uint[]", count: 31 },
@@ -61,7 +64,10 @@ export default fp(
         { key: "uid", type: "str" },
       ]);
 
-      if (name === "" || uid === "") return;
+      if (name === "" || uid === "") {
+        lookupQueue.next();
+        return;
+      }
 
       const record: LookupRecord = {
         uid,
@@ -74,59 +80,58 @@ export default fp(
       };
 
       let str = reader.readString();
-      while (str !== "MountRoleInfo") {
-        if (str === null) return;
+      while (str !== "OfflineMoment") {
+        if (str === null) {
+          lookupQueue.next();
+          return;
+        }
         str = reader.readString();
       }
 
-      reader.skip(28);
-
-      for (let i = 0; i < 3; i++) {
-        const { weaponStr } = reader.destruct<{ weaponStr: string }>([
-          { key: "weaponStr", type: "str" },
-          { type: "uint[]", count: 11 },
-        ]);
-
-        const matchResult = weaponStr.match(
-          /(.+)#\d+##(\d+)#&&(\d+):(\d+):\d+/
-        );
-        if (matchResult) {
-          const [_, name, level, stars] = matchResult;
-
-          record.data.weapons.push({ name, level: +level, stars: +stars });
-        }
-      }
-
-      for (let i = 0; i < 20; i++) {
-        const { equipStr } = reader.destruct<{ equipStr: string }>([
-          { key: "equipStr", type: "str" },
-          { type: "uint" },
-          { type: "str" },
+      for (let i = 0; i < 100; i++) {
+        const { mountStr, mountType } = reader.destruct<{
+          mountStr: string;
+          mountType: string;
+        }>([
           { type: "uint[]", count: 7 },
+          { key: "mountStr", type: "str" },
+          { type: "uint" },
+          { key: "mountType", type: "str" },
         ]);
 
-        const matchResult = equipStr.match(/(.+)#(\d+)#(.+)*#(\d+)#/);
-        if (matchResult) {
-          const [_, partString, level, optionsStr, stars] = matchResult;
+        if (mountType.startsWith("Weapon_")) {
+          const matchResult = mountStr.match(
+            /(.+)#\d+##(\d+)#&&(\d+):(\d+):\d+/
+          );
+          if (matchResult) {
+            const [_, name, level, stars] = matchResult;
 
-          const options = optionsStr
-            .split("|")
-            .map<EquipmentOption>((eachOption) => {
-              const [optionType, optionAmount] = eachOption.split(";");
+            record.data.weapons.push({ name, level: +level, stars: +stars });
+          }
+        } else if (mountType.startsWith("Equipment_")) {
+          const matchResult = mountStr.match(/(.+)#(\d+)#(.+)*#(\d+)#/);
+          if (matchResult) {
+            const [_, partString, level, optionsStr, stars] = matchResult;
 
-              return {
-                type: optionType.slice(2),
-                amount: optionAmount.slice(2),
-              };
+            const options = optionsStr
+              .split("|")
+              .map<EquipmentOption>((eachOption) => {
+                const [optionType, optionAmount] = eachOption.split(";");
+
+                return {
+                  type: optionType.slice(2),
+                  amount: optionAmount.slice(2),
+                };
+              });
+
+            record.data.equipments.push({
+              part: partString,
+              level: +level,
+              options: options,
+              stars: +stars,
             });
-
-          record.data.equipments.push({
-            part: partString,
-            level: +level,
-            options: options,
-            stars: +stars,
-          });
-        } else break;
+          }
+        }
       }
 
       const existingUser = await collection?.findOne({ name });

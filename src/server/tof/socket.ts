@@ -19,6 +19,8 @@ export default class TofSocket {
   }
 
   private invalidateSocket() {
+    this._socket.end();
+
     this._socket = this.initSocket();
     this._socket.emit("reconnect");
   }
@@ -28,6 +30,7 @@ export default class TofSocket {
 
     socket.readableLength;
     // Invalidate if error
+    socket.on("error", () => this.invalidateSocket());
     socket.on("end", () => this.invalidateSocket());
     socket.on("timeout", () => this.invalidateSocket());
     socket.on("close", () => this.invalidateSocket());

@@ -18,7 +18,13 @@ class TofQueue<T> {
   enqueue(newItem: T) {
     if (this.items.length > this.size) return false;
     else {
-      if (this.has(newItem)) return false;
+      if (this.has(newItem)) {
+        if (!this.isRunning) {
+          this.isRunning = true;
+          this.next();
+        }
+        return false;
+      }
 
       this.items.push(newItem);
       if (!this.isRunning) {
@@ -39,9 +45,10 @@ class TofQueue<T> {
       return;
     }
 
-    const firstItem = this.items[0];
-    this.task(firstItem);
-    this.items.shift();
+    const firstItem = this.items.shift();
+    if (firstItem) {
+      this.task(firstItem);
+    }
   }
 }
 
