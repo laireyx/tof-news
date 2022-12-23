@@ -18,29 +18,26 @@ export { DestructOption };
 class TofReader {
   stream: Readable;
 
-  constructor(data: Buffer | null) {
-    this.stream = new Readable();
-    this.stream._read = () => {};
-    this.stream.push(data);
-    this.stream.push(null);
+  constructor(stream: Readable) {
+    this.stream = stream;
   }
 
-  private r32() {
+  r32() {
     return this.stream.read(4) as Buffer | null;
   }
 
-  skip(size: number) {
+  skip(size?: number) {
     this.stream.read(size);
     return this.stream.readable;
   }
 
-  readString(): string | null {
+  readString(): string | undefined {
     let chunks: Buffer[] = [];
     let currentChunk = this.r32();
 
-    if (currentChunk === null) return null;
+    if (!currentChunk) return undefined;
 
-    while (currentChunk !== null) {
+    while (currentChunk) {
       const terminal = currentChunk.findIndex((byte) => byte === 0);
 
       if (terminal !== -1) {
@@ -57,22 +54,27 @@ class TofReader {
 
   destruct<T extends Record<string, string | number | number[]>>(
     opts: DestructOption[]
-  ): T {
-    const ret: Record<string, string | number | number[]> = {};
+  ): Partial<T> {
+    const ret: Record<string, string | number | number[] | undefined> = {};
 
     opts.forEach((option) => {
-      let readResult: string | number | number[];
+      let readResult: string | number | number[] | undefined;
       switch (option.type) {
         case "str":
-          readResult = this.readString() ?? "";
+          readResult = this.readString() ?? undefined;
           break;
         case "uint":
-          readResult = this.r32()?.readUint32LE() ?? 0;
+          readResult = this.r32()?.readUint32LE() ?? undefined;
           break;
         case "uint[]":
           readResult = [];
           for (let i = 0; i < option.count; i++) {
-            readResult.push(this.r32()?.readUint32LE() ?? 0);
+            const eachNumber = this.r32()?.readUint32LE() ?? undefined;
+            if (eachNumber === undefined) {
+              readResult = undefined;
+              break;
+            }
+            readResult.push(eachNumber);
           }
           break;
       }

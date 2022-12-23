@@ -72,20 +72,16 @@ export default fp(
     });
 
     scanSocket.on("readable", () => {
-      const data = scanSocket.recv();
-      const reader = new TofReader(data);
-
-      if (!data) return;
+      const reader = new TofReader(scanSocket.socket);
 
       for (;;) {
-        const { test } = reader.destruct<{ test: number }>([
-          {
-            key: "test",
-            type: "uint",
-          },
-        ]);
+        const test = reader.r32()?.readUint32LE() ?? undefined;
 
-        if (test == 0) return;
+        if (test === undefined) {
+          reader.skip();
+          scanQueue.next();
+          return;
+        }
         if (test === 8) break;
       }
 
@@ -104,11 +100,13 @@ export default fp(
           { type: "uint[]", count: 8 },
         ]);
 
-        if (name === "" || uid === "") break;
+        if (!name || !uid) break;
 
         console.log("Scan result: ", name, uid);
         fastify.tofLookupByUid(uid);
       }
+
+      reader.skip();
       scanQueue.next();
     });
 

@@ -45,17 +45,16 @@ export default fp(
     });
 
     lookupSocket.on("readable", async () => {
-      const data = lookupSocket.recv();
-      const reader = new TofReader(data);
+      const reader = new TofReader(lookupSocket.socket);
 
-      if (!data) {
-        lookupQueue.next();
-        return;
-      }
-
-      const { name, uid } = reader.destruct<{ name: string; uid: string }>([
-        { type: "uint[]", count: 31 },
-        { type: "str" },
+      const { padding, location, name, uid } = reader.destruct<{
+        padding: number[];
+        location: string;
+        name: string;
+        uid: string;
+      }>([
+        { key: "padding", type: "uint[]", count: 31 },
+        { key: "location", type: "str" }, // Current Location
         { type: "uint" },
         { key: "name", type: "str" },
         { type: "uint" },
@@ -64,7 +63,8 @@ export default fp(
         { key: "uid", type: "str" },
       ]);
 
-      if (name === "" || uid === "") {
+      if (!name || !uid) {
+        reader.skip();
         lookupQueue.next();
         return;
       }
@@ -81,7 +81,8 @@ export default fp(
 
       let str = reader.readString();
       while (str !== "OfflineMoment") {
-        if (str === null) {
+        if (str === undefined) {
+          reader.skip();
           lookupQueue.next();
           return;
         }
@@ -98,6 +99,8 @@ export default fp(
           { type: "uint" },
           { key: "mountType", type: "str" },
         ]);
+
+        if (!mountStr || !mountType) break;
 
         if (mountType.startsWith("Weapon_")) {
           const matchResult = mountStr.match(
@@ -149,6 +152,7 @@ export default fp(
         { upsert: true }
       );
 
+      reader.skip();
       lookupQueue.next();
     });
 
