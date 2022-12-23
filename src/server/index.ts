@@ -13,6 +13,7 @@ function start() {
 
   server.register(AutoLoad, {
     dir: path.join(__dirname, "routes"),
+    ignorePattern: env.BLOCK_ROUTE ? new RegExp(env.BLOCK_ROUTE) : undefined,
   });
 
   server.get("/", async () => {
