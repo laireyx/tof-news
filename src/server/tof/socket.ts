@@ -19,20 +19,27 @@ export default class TofSocket {
   }
 
   private invalidateSocket() {
-    this._socket.end();
+    if (!this._socket.readableEnded) this._socket.end();
 
-    this._socket = this.initSocket();
-    this._socket.emit("reconnect");
+    if (this.isReady) {
+      console.log("Connection lost");
+      this.isReady = false;
+    }
+    // this._socket = this.initSocket();
+    // this._socket.emit("reconnect");
   }
 
   private initSocket(): net.Socket {
     const socket = net.connect(this.connectOpts);
 
-    socket.readableLength;
+    console.log("New connection");
     // Invalidate if error
-    socket.on("error", () => this.invalidateSocket());
-    socket.on("end", () => this.invalidateSocket());
+    socket.on("error", (err) => {
+      console.error(err);
+      this.invalidateSocket();
+    });
     socket.on("timeout", () => this.invalidateSocket());
+    socket.on("end", () => this.invalidateSocket());
     socket.on("close", () => this.invalidateSocket());
 
     // Reinstall all listeners

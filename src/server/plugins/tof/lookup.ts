@@ -56,10 +56,6 @@ export default fp(
         return;
       }
 
-      if (reader.readableLength <= 2048) {
-        console.log("Response too short: ", reader.readableLength);
-      }
-
       const { name, uid } = reader.destruct<{
         name: string;
         uid: string;
@@ -74,7 +70,7 @@ export default fp(
         { key: "uid", type: "str" },
       ]);
 
-      if (!name || !uid) {
+      if (!name || !uid || uid?.length !== 17) {
         reader.skip();
         lookupQueue.next();
         return;
@@ -183,7 +179,7 @@ export default fp(
       );
 
       reader.skip();
-      lookupQueue.next();
+      lookupQueue.done();
     });
 
     fastify.decorate(

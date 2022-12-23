@@ -45,10 +45,14 @@ class TofQueue<T> {
       return;
     }
 
-    const firstItem = this.items.shift();
-    if (firstItem) {
-      this.task(firstItem);
-    }
+    console.log("Queue Next!");
+    const firstItem = this.items[0];
+    this.task(firstItem);
+  }
+
+  done() {
+    this.items.shift();
+    this.next();
   }
 }
 

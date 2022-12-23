@@ -103,11 +103,16 @@ export default fp(
         if (!name || !uid) break;
 
         console.log("Scan result: ", name, uid);
+        if (uid.length !== 17) {
+          reader.skip();
+          scanQueue.next();
+          return;
+        }
         fastify.tofLookupByUid(uid);
       }
 
       reader.skip();
-      scanQueue.next();
+      scanQueue.done();
     });
 
     fastify.decorate(
