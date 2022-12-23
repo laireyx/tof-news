@@ -53,8 +53,6 @@ export default fp(
       // Consume Server Hello
       if (reader.readableLength === 340) reader.skip();
 
-      if (reader.readableLength < 2048) return;
-
       const { name, uid } = reader.destruct<{
         name: string;
         uid: string;
