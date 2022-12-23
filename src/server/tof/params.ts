@@ -2,4 +2,8 @@ type LookupParams = {
   uid: string;
 };
 
-export { LookupParams };
+type ScanParams = {
+  nickname: string;
+};
+
+export { LookupParams, ScanParams };
