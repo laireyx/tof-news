@@ -5,6 +5,7 @@ import {
   LookupRecord,
   LookupResponse,
 } from "../../tof/lookup";
+import TofQueue from "../../tof/queue";
 import TofReader from "../../tof/reader";
 import TofSocket from "../../tof/socket";
 import { padString } from "../../tof/util";
@@ -18,9 +19,6 @@ declare module "fastify" {
 
 export default fp(
   async function (fastify, opts) {
-    const lookupSocket = new TofSocket();
-    const lookupQueue = new Set<string>();
-
     const LOOKUP = Buffer.from([
       0x84, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x00,
       0x0c, 0x00, 0x04, 0x00, 0x00, 0x00, 0x08, 0x00, 0x0a, 0x00, 0x00, 0x00,
@@ -33,6 +31,12 @@ export default fp(
       0x08, 0x00, 0x00, 0x00, 0x8c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
       0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x00, 0x00,
     ]);
+
+    const lookupSocket = new TofSocket();
+    const lookupQueue = new TofQueue<string>({
+      size: +(env.LOOKUP_QUEUE || "100"),
+      task: (uid) => lookupSocket.send(Buffer.concat([LOOKUP, padString(uid)])),
+    });
 
     const collection = fastify.mongo.db?.collection<LookupRecord>("lookup");
 
@@ -127,8 +131,7 @@ export default fp(
       // Update that user.
       // 일종의 밀어내기식 업데이트
       if (existingUser && existingUser.uid !== uid) {
-        lookupQueue.add(uid);
-        await lookupSocket.send(Buffer.concat([LOOKUP, padString(uid)]));
+        lookupQueue.enqueue(uid);
       }
 
       await collection?.updateOne(
@@ -136,7 +139,8 @@ export default fp(
         { $set: record },
         { upsert: true }
       );
-      lookupQueue.delete(uid);
+
+      lookupQueue.next();
     });
 
     fastify.decorate(
@@ -152,9 +156,8 @@ export default fp(
         )
           return { data: queryResult };
 
-        if (!lookupQueue.has(uid)) lookupQueue.add(uid);
-        lookupSocket.send(Buffer.concat([LOOKUP, padString(uid)]));
-        return { queued: true, num: 1 };
+        const queued = lookupQueue.enqueue(uid);
+        return { queued, num: lookupQueue.length };
       }
     );
 

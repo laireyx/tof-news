@@ -4,6 +4,7 @@ import { ScanResponse } from "../../tof/scan";
 import TofReader from "../../tof/reader";
 import TofSocket from "../../tof/socket";
 import { padString } from "../../tof/util";
+import TofQueue from "../../tof/queue";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -11,8 +12,8 @@ declare module "fastify" {
   }
 }
 
-function scanPacket(nickname: string) {
-  const padName = padString(nickname);
+function scanPacket(name: string) {
+  const padName = padString(name);
   const nameLength = padName.byteLength;
 
   return Buffer.concat([
@@ -46,8 +47,8 @@ function scanPacket(nickname: string) {
       0x00, 0x00, 0x00,
     ]),
 
-    Buffer.from([Buffer.from(nickname, "utf-8").byteLength, 0x00, 0x00, 0x00]),
-    padString(nickname),
+    Buffer.from([Buffer.from(name, "utf-8").byteLength, 0x00, 0x00, 0x00]),
+    padString(name),
 
     // Padding String: DummyAuthTicket
     Buffer.from([
@@ -61,7 +62,10 @@ function scanPacket(nickname: string) {
 export default fp(
   async function (fastify, opts) {
     const scanSocket = new TofSocket();
-    const scanQueue = new Set<string>();
+    const scanQueue = new TofQueue<string>({
+      size: +(env.SCAN_QUEUE || 100),
+      task: (name) => scanSocket.send(scanPacket(name)),
+    });
 
     scanSocket.on("readable", () => {
       const data = scanSocket.recv();
@@ -85,23 +89,22 @@ export default fp(
       reader.destruct([{ type: "uint" }]);
 
       for (let i = 0; i < 100; i++) {
-        const { nickname, uid } = reader.destruct<{
-          nickname: string;
+        const { name, uid } = reader.destruct<{
+          name: string;
           uid: string;
         }>([
-          { type: "uint" }, // strlen(nickname)
-          { type: "str", key: "nickname" },
+          { type: "uint" }, // strlen(name)
+          { type: "str", key: "name" },
           { type: "uint" }, // strlen(uid)
           { type: "str", key: "uid" },
           { type: "uint[]", count: 8 },
         ]);
 
-        if (nickname === "" || uid === "") break;
+        if (name === "" || uid === "") break;
 
-        if (scanQueue.has(nickname)) {
-          scanQueue.delete(nickname);
+        if (scanQueue.has(name)) {
           fastify.tofLookupByUid(uid);
-
+          scanQueue.next();
           break;
         }
       }
@@ -109,15 +112,15 @@ export default fp(
 
     fastify.decorate(
       "tofScan",
-      async function (nickname: string): Promise<ScanResponse> {
-        if (scanQueue.size > +(env.SCANLOOKUP_QUEUE || "100")) {
+      async function (name: string): Promise<ScanResponse> {
+        if (scanQueue.length > +(env.SCANLOOKUP_QUEUE || "100")) {
           return { queued: false, num: -1 };
         }
 
-        if (!scanQueue.has(nickname)) scanQueue.add(nickname);
-        await scanSocket.send(scanPacket(nickname));
+        scanQueue.enqueue(name);
+        await scanSocket.send(scanPacket(name));
 
-        return { queued: true, num: scanQueue.size };
+        return { queued: true, num: scanQueue.length };
       }
     );
   },

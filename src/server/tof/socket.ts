@@ -69,6 +69,13 @@ export default class TofSocket {
   }
 
   recv() {
-    return (this.socket.read() as Buffer | null) ?? null;
+    const chunks: Buffer[] = [];
+    let chunk;
+
+    while ((chunk = this.socket.read())) {
+      chunks.push(chunk);
+    }
+
+    return Buffer.concat(chunks);
   }
 }
