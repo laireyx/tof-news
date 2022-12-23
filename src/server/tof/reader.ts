@@ -22,6 +22,10 @@ class TofReader {
     this.stream = stream;
   }
 
+  get readableLength() {
+    return this.stream.readableLength;
+  }
+
   r32() {
     return this.stream.read(4) as Buffer | null;
   }

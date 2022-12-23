@@ -45,21 +45,18 @@ export default fp(
     });
 
     lookupSocket.on("readable", async () => {
+      const reader = new TofReader(lookupSocket.socket);
+
       // Consume Server Hello
-      if (lookupSocket.socket.readableLength === 340) {
-        console.log("Consuming 340", lookupSocket.socket.readableLength);
-        lookupSocket.socket.read();
+      if (reader.readableLength === 340) {
+        console.log("Consuming 340", reader.readableLength);
+        reader.skip();
       }
 
-      if (lookupSocket.socket.readableLength < 2048) {
-        console.log(
-          "Lookup is not prepared yet:",
-          lookupSocket.socket.readableLength
-        );
+      if (reader.readableLength < 2048) {
+        console.log("Lookup is not prepared yet:", reader.readableLength);
         return;
       }
-
-      const reader = new TofReader(lookupSocket.socket);
 
       const { name, uid } = reader.destruct<{
         name: string;
