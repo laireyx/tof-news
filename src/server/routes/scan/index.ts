@@ -3,6 +3,7 @@ import { ScanParams } from "../../tof/params";
 
 export default async function (fastify: FastifyInstance) {
   fastify.get<{ Querystring: ScanParams }>("/", function (request) {
-    return fastify.tofScan(request.query.nickname);
+    return { queued: false };
+    // return fastify.tofScan(request.query.nickname);
   });
 }
