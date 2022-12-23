@@ -36,7 +36,7 @@ export default fp(
 
     const collection = fastify.mongo.db?.collection<LookupRecord>("lookup");
 
-    lookupSocket.on("readable", () => {
+    lookupSocket.on("readable", async () => {
       const data = lookupSocket.recv();
       const reader = new TofReader(data);
 
@@ -121,9 +121,22 @@ export default fp(
         } else break;
       }
 
-      collection
-        ?.updateOne({ uid: uid }, { $set: record }, { upsert: true })
-        .then(() => lookupQueue.delete(uid));
+      const existingUser = await collection?.findOne({ name });
+
+      // There already exists user with same name.
+      // Update that user.
+      // 일종의 밀어내기식 업데이트
+      if (existingUser && existingUser.uid !== uid) {
+        lookupQueue.add(uid);
+        await lookupSocket.send(Buffer.concat([LOOKUP, padString(uid)]));
+      }
+
+      await collection?.updateOne(
+        { uid: uid },
+        { $set: record },
+        { upsert: true }
+      );
+      lookupQueue.delete(uid);
     });
 
     fastify.decorate(
