@@ -2,6 +2,7 @@ class TofQueue<T> {
   private size: number;
   private items: T[];
   private task: (item: T) => any;
+  private isRunning = false;
 
   constructor({ size, task }: { size?: number; task?: (item: T) => any } = {}) {
     this.size = size || 100;
@@ -20,6 +21,10 @@ class TofQueue<T> {
       if (this.has(newItem)) return false;
 
       this.items.push(newItem);
+      if (!this.isRunning) {
+        this.isRunning = true;
+        this.next();
+      }
       return true;
     }
   }
@@ -29,11 +34,14 @@ class TofQueue<T> {
   }
 
   async next() {
-    if (this.length > 0) {
-      const firstItem = this.items[0];
-      await this.task(firstItem);
-      this.items.shift();
+    if (this.length === 0) {
+      this.isRunning = false;
+      return;
     }
+
+    const firstItem = this.items[0];
+    await this.task(firstItem);
+    this.items.shift();
   }
 }
 
