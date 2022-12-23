@@ -33,14 +33,14 @@ class TofQueue<T> {
     return this.items.includes(item);
   }
 
-  async next() {
+  next() {
     if (this.length === 0) {
       this.isRunning = false;
       return;
     }
 
     const firstItem = this.items[0];
-    await this.task(firstItem);
+    this.task(firstItem);
     this.items.shift();
   }
 }

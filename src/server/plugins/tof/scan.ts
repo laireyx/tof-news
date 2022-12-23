@@ -117,10 +117,9 @@ export default fp(
           return { queued: false, num: -1 };
         }
 
-        scanQueue.enqueue(name);
-        await scanSocket.send(scanPacket(name));
+        const queued = scanQueue.enqueue(name);
 
-        return { queued: true, num: scanQueue.length };
+        return { queued, num: scanQueue.length };
       }
     );
   },
