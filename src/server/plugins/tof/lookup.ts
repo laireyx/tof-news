@@ -40,6 +40,10 @@ export default fp(
 
     const collection = fastify.mongo.db?.collection<LookupRecord>("lookup");
 
+    lookupSocket.on("reconnect", () => {
+      lookupQueue.next();
+    });
+
     lookupSocket.on("readable", async () => {
       const data = lookupSocket.recv();
       const reader = new TofReader(data);

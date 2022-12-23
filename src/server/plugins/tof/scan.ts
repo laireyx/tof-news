@@ -67,6 +67,10 @@ export default fp(
       task: (name) => scanSocket.send(scanPacket(name)),
     });
 
+    scanSocket.on("reconnect", () => {
+      scanQueue.next();
+    });
+
     scanSocket.on("readable", () => {
       const data = scanSocket.recv();
       const reader = new TofReader(data);
@@ -104,10 +108,10 @@ export default fp(
 
         if (scanQueue.has(name)) {
           fastify.tofLookupByUid(uid);
-          scanQueue.next();
           break;
         }
       }
+      scanQueue.next();
     });
 
     fastify.decorate(

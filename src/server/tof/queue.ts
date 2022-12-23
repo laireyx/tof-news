@@ -43,6 +43,11 @@ class TofQueue<T> {
     this.task(firstItem);
     this.items.shift();
   }
+
+  clear() {
+    this.items = [];
+    this.isRunning = false;
+  }
 }
 
 export default TofQueue;

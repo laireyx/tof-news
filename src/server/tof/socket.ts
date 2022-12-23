@@ -19,7 +19,8 @@ export default class TofSocket {
   }
 
   private invalidateSocket() {
-    this.isReady = false;
+    this._socket = this.initSocket();
+    this._socket.emit("reconnect");
   }
 
   private initSocket(): net.Socket {
