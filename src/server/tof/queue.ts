@@ -45,7 +45,6 @@ class TofQueue<T> {
       return;
     }
 
-    console.log("Queue Next!");
     const firstItem = this.items[0];
     this.task(firstItem);
   }
