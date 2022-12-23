@@ -49,7 +49,13 @@ export default fp(
       if (lookupSocket.socket.readableLength === 340)
         lookupSocket.socket.read();
 
-      if (lookupSocket.socket.readableLength < 3072) return;
+      if (lookupSocket.socket.readableLength < 2048) {
+        console.log(
+          "Lookup is not prepared yet:",
+          lookupSocket.socket.readableLength
+        );
+        return;
+      }
 
       const reader = new TofReader(lookupSocket.socket);
 
