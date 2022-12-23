@@ -15,8 +15,7 @@ export default async function (fastify: FastifyInstance) {
       },
     },
     function (request) {
-      return { queued: false };
-      // return fastify.tofLookupByName(request.params.name);
+      return fastify.tofLookupByName(request.params.name);
     }
   );
 }
