@@ -106,10 +106,7 @@ export default fp(
 
         if (name === "" || uid === "") break;
 
-        if (scanQueue.has(name)) {
-          fastify.tofLookupByUid(uid);
-          break;
-        }
+        fastify.tofLookupByUid(uid);
       }
       scanQueue.next();
     });
