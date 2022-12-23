@@ -19,6 +19,8 @@ declare module "fastify" {
 export default fp(
   async function (fastify, opts) {
     const lookupSocket = new TofSocket();
+    const lookupQueue = new Set<string>();
+
     const LOOKUP = Buffer.from([
       0x84, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x00,
       0x0c, 0x00, 0x04, 0x00, 0x00, 0x00, 0x08, 0x00, 0x0a, 0x00, 0x00, 0x00,
@@ -119,7 +121,9 @@ export default fp(
         } else break;
       }
 
-      collection?.updateOne({ uid: uid }, { $set: record }, { upsert: true });
+      collection
+        ?.updateOne({ uid: uid }, { $set: record }, { upsert: true })
+        .then(() => lookupQueue.delete(uid));
     });
 
     fastify.decorate(
@@ -131,12 +135,13 @@ export default fp(
 
         if (
           queryResult &&
-          queryResult.timestamp + +(env.LOOKUP_LIMIT ?? "3600000") > Date.now()
+          queryResult.timestamp + +(env.LOOKUP_EXPIRE ?? "3600000") > Date.now()
         )
           return { data: queryResult };
 
+        lookupQueue.add(uid);
         lookupSocket.send(Buffer.concat([LOOKUP, padString(uid)]));
-        return { queued: true };
+        return { queued: true, num: 1 };
       }
     );
 
@@ -149,7 +154,7 @@ export default fp(
 
         if (
           queryResult &&
-          queryResult.timestamp + +(env.LOOKUP_LIMIT ?? "3600000") > Date.now()
+          queryResult.timestamp + +(env.LOOKUP_EXPIRE ?? "3600000") > Date.now()
         )
           return { data: queryResult };
 

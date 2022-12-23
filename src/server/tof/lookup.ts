@@ -54,6 +54,7 @@ type LookupRecord = {
 
 type LookupResponse = {
   queued?: boolean;
+  num?: number;
   data?: LookupRecord;
 };
 
