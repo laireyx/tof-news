@@ -13,7 +13,7 @@ type EquipmentOptionElement =
   | "Ice"
   | "Superpower";
 type EquipmentOptionValue = "Atk" | "Def" | "MaxHealth" | "Crit";
-type EquipmentOptionAdjust = "Added" | "Mult";
+type EquipmentOptionAdjust = "Added" | "Mult" | "ExtraUpMult";
 
 type EquipmentOption = {
   element?: EquipmentOptionElement;
@@ -52,4 +52,6 @@ export {
   EquipmentOptionElement,
   EquipmentOptionValue,
   EquipmentOptionAdjust,
+  WeaponStat,
+  EquipmentStat,
 };

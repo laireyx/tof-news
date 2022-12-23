@@ -130,7 +130,7 @@ export default fp(
                 const match = optionType
                   .slice(2)
                   .match(
-                    /(Common|Element|Phy|Thunder|Fire|Ice|Superpower)?(Atk|Def|MaxHealth|Crit)(Added|Mult)?/
+                    /(Common|Element|Phy|Thunder|Fire|Ice|Superpower)?(Atk|Def|MaxHealth|Crit)(Added|Mult|ExtraUpMult)?/
                   );
 
                 if (match) {
