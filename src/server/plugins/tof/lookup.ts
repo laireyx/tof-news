@@ -8,7 +8,6 @@ import {
   EquipmentOptionValue,
   EquipmentOptionAdjust,
 } from "../../tof/lookup";
-import TofQueue from "../../tof/queue";
 import TofReader from "../../tof/reader";
 import TofSocket from "../../tof/socket";
 import { padString } from "../../tof/util";
@@ -206,6 +205,9 @@ export default fp(
           queryResult.timestamp + +(env.LOOKUP_EXPIRE ?? "3600000") > Date.now()
         )
           return { data: queryResult };
+        else if (queryResult) {
+          return await fastify.tofLookupByUid(queryResult.uid);
+        }
 
         return await fastify.tofScan(name);
       }

@@ -4,7 +4,6 @@ import { ScanResponse } from "../../tof/scan";
 import TofReader from "../../tof/reader";
 import TofSocket from "../../tof/socket";
 import { padString } from "../../tof/util";
-import TofQueue from "../../tof/queue";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -62,69 +61,54 @@ function scanPacket(name: string) {
 export default fp(
   async function (fastify, opts) {
     const scanSocket = new TofSocket();
-    const scanQueue = new TofQueue<string>({
-      size: +(env.SCAN_QUEUE || 100),
-      task: (name) => scanSocket.send(scanPacket(name)),
-    });
-
-    scanSocket.on("reconnect", () => {
-      scanQueue.next();
-    });
-
-    scanSocket.on("readable", () => {
-      const reader = new TofReader(scanSocket.socket);
-
-      for (;;) {
-        const test = reader.r32()?.readUint32LE() ?? undefined;
-
-        if (test === undefined) {
-          reader.skip();
-          scanQueue.next();
-          return;
-        }
-        if (test === 8) break;
-      }
-
-      // Skip 4bytes.
-      reader.destruct([{ type: "uint" }]);
-
-      for (let i = 0; i < 100; i++) {
-        const { name, uid } = reader.destruct<{
-          name: string;
-          uid: string;
-        }>([
-          { type: "uint" }, // strlen(name)
-          { type: "str", key: "name" },
-          { type: "uint" }, // strlen(uid)
-          { type: "str", key: "uid" },
-          { type: "uint[]", count: 8 },
-        ]);
-
-        if (!name || !uid) break;
-
-        console.log("Scan result: ", name, uid);
-        if (uid.length !== 17) {
-          reader.skip();
-          scanQueue.next();
-          return;
-        }
-        fastify.tofLookupByUid(uid);
-      }
-
-      reader.skip();
-      scanQueue.done();
-    });
 
     fastify.decorate(
       "tofScan",
       async function (name: string): Promise<ScanResponse> {
-        if (scanQueue.length > +(env.SCANLOOKUP_QUEUE || "100")) {
-          return { queued: false, num: -1 };
-        }
+        scanSocket.on("readable", () => {
+          const reader = new TofReader(scanSocket.socket);
 
-        const queued = scanQueue.enqueue(name);
+          for (;;) {
+            const test = reader.r32()?.readUint32LE() ?? undefined;
 
-        return { queued, num: scanQueue.length };
+            if (test === undefined) {
+              reader.skip();
+              return;
+            }
+            if (test === 8) break;
+          }
+
+          // Skip 4bytes.
+          reader.destruct([{ type: "uint" }]);
+
+          for (let i = 0; i < 100; i++) {
+            const { name, uid } = reader.destruct<{
+              name: string;
+              uid: string;
+            }>([
+              { type: "uint" }, // strlen(name)
+              { type: "str", key: "name" },
+              { type: "uint" }, // strlen(uid)
+              { type: "str", key: "uid" },
+              { type: "uint[]", count: 8 },
+            ]);
+
+            if (!name || !uid) break;
+
+            console.log("Scan result: ", name, uid);
+            if (uid.length !== 17) {
+              reader.skip();
+              return;
+            }
+            fastify.tofLookupByUid(uid);
+          }
+
+          reader.skip();
+        });
+
+        scanSocket.send(scanPacket(name));
+
+        return { queued: true };
       }
     );
   },
