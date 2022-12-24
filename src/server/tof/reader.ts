@@ -30,9 +30,8 @@ class TofReader {
     return this.stream.read(4) as Buffer | null;
   }
 
-  skip(size?: number) {
-    this.stream.read(size);
-    return this.stream.readable;
+  skip() {
+    this.stream.read();
   }
 
   readString(): string | undefined {
