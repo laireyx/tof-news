@@ -1,5 +1,4 @@
 import fp from "fastify-plugin";
-import { env } from "process";
 import { ScanResponse } from "../../tof/scan";
 import TofReader from "../../tof/reader";
 import TofSocket from "../../tof/socket";
@@ -60,11 +59,11 @@ function scanPacket(name: string) {
 
 export default fp(
   async function (fastify, opts) {
-    const scanSocket = new TofSocket();
-
     fastify.decorate(
       "tofScan",
       async function (name: string): Promise<ScanResponse> {
+        const scanSocket = new TofSocket();
+
         scanSocket.on("readable", () => {
           const reader = new TofReader(scanSocket.socket);
 

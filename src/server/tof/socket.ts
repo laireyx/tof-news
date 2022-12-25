@@ -23,7 +23,6 @@ export default class TofSocket {
     if (!this._socket.readableEnded) this._socket.end();
 
     if (this.isReady) {
-      console.log("Connection lost");
       this.isReady = false;
     }
     // this._socket = this.initSocket();
@@ -33,7 +32,6 @@ export default class TofSocket {
   private initSocket(): net.Socket {
     const socket = net.connect(this.connectOpts);
 
-    console.log("New connection");
     // Invalidate if error
     socket.on("error", (err) => {
       console.error(err);
@@ -64,7 +62,7 @@ export default class TofSocket {
   on(event: string, listener: ListenerCallback) {
     const eventListeners = this._listeners.get(event) ?? [];
 
-    this.socket.on(event, listener);
+    this._socket.on(event, listener);
     eventListeners.push(listener);
 
     this._listeners.set(event, eventListeners);
