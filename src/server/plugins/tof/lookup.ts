@@ -55,7 +55,11 @@ export default fp(
           const reader = new TofReader(lookupSocket.socket);
 
           // Consume Server Hello
-          if (reader.readableLength <= 340) {
+          if (reader.readableLength === 340) {
+            reader.drain();
+          }
+
+          if (reader.readableLength < 1024) {
             reader.skip();
             return;
           }

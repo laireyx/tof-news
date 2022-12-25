@@ -30,6 +30,10 @@ class TofReader {
     return this.stream.read(4) as Buffer | null;
   }
 
+  drain() {
+    this.stream.read();
+  }
+
   skip() {
     this.stream.read(0);
   }

@@ -70,6 +70,10 @@ export default fp(
 
           // Consume Server Hello
           if (reader.readableLength === 340) {
+            reader.drain();
+          }
+
+          if (reader.readableLength < 1024) {
             reader.skip();
             return;
           }
