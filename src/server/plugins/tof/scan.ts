@@ -72,11 +72,6 @@ export default fp(
             reader.drain();
           }
 
-          if (reader.readableLength < 1024) {
-            reader.skip();
-            return;
-          }
-
           for (;;) {
             const test = reader.r32()?.readUint32LE() ?? undefined;
 
