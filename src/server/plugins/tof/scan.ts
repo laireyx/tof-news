@@ -78,7 +78,7 @@ export default fp(
             const test = reader.r32()?.readUint32LE() ?? undefined;
 
             if (test === undefined) {
-              reader.skip();
+              scanSocket.socket.end();
               return;
             }
             if (test === 8) break;

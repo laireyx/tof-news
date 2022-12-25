@@ -31,7 +31,7 @@ class TofReader {
   }
 
   skip() {
-    this.stream.read();
+    this.stream.read(0);
   }
 
   readString(): string | undefined {
