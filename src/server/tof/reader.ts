@@ -15,48 +15,39 @@ type DestructOption =
 
 export { DestructOption };
 
-class TofReader {
-  stream: Readable;
-
-  constructor(stream: Readable) {
-    this.stream = stream;
+class TofMessage {
+  buffer: Buffer;
+  constructor(buffer: Buffer) {
+    this.buffer = buffer;
   }
 
-  get readableLength() {
-    return this.stream.readableLength;
+  readInt() {
+    if (this.buffer.byteLength < 4) return undefined;
+
+    const int = this.buffer.readUint32LE();
+    this.buffer = this.buffer.subarray(4);
+
+    return int;
   }
 
-  r32() {
-    return this.stream.read(4) as Buffer | null;
+  readString() {
+    const strlen = this.readInt();
+    if (strlen === undefined || this.buffer.byteLength < strlen)
+      return undefined;
+
+    const str = this.buffer.subarray(0, strlen).toString("utf-8");
+    this.buffer = this.buffer.subarray(strlen + (4 - (strlen & 0x03)));
+
+    return str;
   }
 
-  drain() {
-    this.stream.read();
-  }
+  readSize(size: number) {
+    if (this.buffer.byteLength < size) return undefined;
 
-  skip() {
-    this.stream.read(0);
-  }
+    const buf = this.buffer.subarray(0, size);
+    this.buffer = this.buffer.subarray(size);
 
-  readString(): string | undefined {
-    let chunks: Buffer[] = [];
-    let currentChunk = this.r32();
-
-    if (!currentChunk) return undefined;
-
-    while (currentChunk) {
-      const terminal = currentChunk.findIndex((byte) => byte === 0);
-
-      if (terminal !== -1) {
-        if (terminal > 0) chunks.push(currentChunk.subarray(0, terminal));
-        break;
-      }
-
-      chunks.push(currentChunk);
-      currentChunk = this.r32();
-    }
-
-    return Buffer.concat(chunks).toString("utf-8");
+    return buf;
   }
 
   destruct<T extends Record<string, string | number | number[]>>(
@@ -68,19 +59,15 @@ class TofReader {
       let readResult: string | number | number[] | undefined;
       switch (option.type) {
         case "str":
-          readResult = this.readString() ?? undefined;
+          readResult = this.readString();
           break;
         case "uint":
-          readResult = this.r32()?.readUint32LE() ?? undefined;
+          readResult = this.readInt();
           break;
         case "uint[]":
           readResult = [];
           for (let i = 0; i < option.count; i++) {
-            const eachNumber = this.r32()?.readUint32LE() ?? undefined;
-            if (eachNumber === undefined) {
-              readResult = undefined;
-              break;
-            }
+            const eachNumber = this.readInt() ?? 0;
             readResult.push(eachNumber);
           }
           break;
@@ -92,6 +79,48 @@ class TofReader {
     });
 
     return ret as T;
+  }
+}
+
+class TofReader {
+  stream: Readable;
+  waitingLength: number;
+
+  constructor(stream: Readable) {
+    this.stream = stream;
+    this.waitingLength = -1;
+  }
+
+  r32() {
+    return this.stream.read(4) as Buffer | null;
+  }
+
+  i32() {
+    const r32Result = this.r32();
+    return r32Result?.readUint32LE() ?? null;
+  }
+
+  read() {
+    if (this.waitingLength === -1) {
+      this.waitingLength = this.i32() ?? -1;
+
+      if (this.waitingLength === -1) return null;
+    }
+
+    if (this.stream.readableLength < this.waitingLength) return null;
+
+    const readResult = this.stream.read(this.waitingLength) as Buffer | null;
+    if (readResult == null) return null;
+
+    this.waitingLength = -1;
+    return readResult;
+  }
+
+  readMessage() {
+    const readResult = this.read();
+    if (readResult == null) return null;
+
+    return new TofMessage(readResult);
   }
 }
 

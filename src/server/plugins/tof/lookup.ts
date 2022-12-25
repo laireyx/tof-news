@@ -8,9 +8,9 @@ import {
   EquipmentOptionValue,
   EquipmentOptionAdjust,
 } from "../../tof/lookup";
+import TofMessage from "../../tof/msg";
 import TofReader from "../../tof/reader";
 import TofSocket from "../../tof/socket";
-import { padString } from "../../tof/util";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -21,18 +21,19 @@ declare module "fastify" {
 
 export default fp(
   async function (fastify, opts) {
-    const LOOKUP = Buffer.from([
-      0x84, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x00,
-      0x0c, 0x00, 0x04, 0x00, 0x00, 0x00, 0x08, 0x00, 0x0a, 0x00, 0x00, 0x00,
-      0x70, 0x04, 0x00, 0x00, 0x68, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00,
-      0x0c, 0x00, 0x10, 0x00, 0x04, 0x00, 0x08, 0x00, 0x00, 0x00, 0x0c, 0x00,
-      0x0c, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x3f, 0x01, 0x00, 0x00,
-      0x48, 0x00, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e, 0x00,
-      0x14, 0x00, 0x04, 0x00, 0x08, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x10, 0x00,
-      0x0e, 0x00, 0x00, 0x00, 0x18, 0x00, 0x00, 0x00, 0x61, 0xae, 0x0a, 0x00,
-      0x08, 0x00, 0x00, 0x00, 0x8c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-      0x00, 0x00, 0x00, 0x00, 0x11, 0x00, 0x00, 0x00,
-    ]);
+    const LOOKUP = new TofMessage()
+      .add([
+        0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x0c, 0x00, 0x04, 0x00,
+        0x00, 0x00, 0x08, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x70, 0x04, 0x00, 0x00,
+        0x68, 0x00, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x10, 0x00,
+        0x04, 0x00, 0x08, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x0c, 0x00, 0x00, 0x00,
+        0x0a, 0x00, 0x00, 0x00, 0x3f, 0x01, 0x00, 0x00, 0x48, 0x00, 0x00, 0x00,
+        0x14, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e, 0x00, 0x14, 0x00, 0x04, 0x00,
+        0x08, 0x00, 0x00, 0x00, 0x0c, 0x00, 0x10, 0x00, 0x0e, 0x00, 0x00, 0x00,
+        0x18, 0x00, 0x00, 0x00, 0x61, 0xae, 0x0a, 0x00, 0x08, 0x00, 0x00, 0x00,
+        0x8c, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+      ])
+      .freeze();
 
     const collection = fastify.mongo.db?.collection<LookupRecord>("lookup");
 
@@ -50,36 +51,24 @@ export default fp(
           return { data: queryResult };
 
         const lookupSocket = new TofSocket();
+        const reader = new TofReader(lookupSocket.socket);
 
         lookupSocket.on("readable", async () => {
-          const reader = new TofReader(lookupSocket.socket);
+          const msg = reader.readMessage();
+          if (msg == null) return;
 
-          // Consume Server Hello
-          if (reader.readableLength === 340) {
-            reader.drain();
-          }
-
-          if (reader.readableLength < 1024) {
-            reader.skip();
-            return;
-          }
-
-          const { name, uid } = reader.destruct<{
+          const { name, uid } = msg.destruct<{
             name: string;
             uid: string;
           }>([
-            { type: "uint[]", count: 31 },
+            { type: "uint[]", count: 29 },
             { type: "str" }, // Current Location
-            { type: "uint" },
             { key: "name", type: "str" },
-            { type: "uint" },
             { type: "str" },
-            { type: "uint" },
             { key: "uid", type: "str" },
           ]);
 
           if (!name || !uid || uid?.length !== 17) {
-            lookupSocket.socket.end();
             return;
           }
 
@@ -93,23 +82,28 @@ export default fp(
             },
           };
 
-          let str = reader.readString();
-          while (str !== "OfflineMoment") {
-            if (str === undefined) {
-              lookupSocket.socket.end();
-              return;
+          while (true) {
+            let strlen = msg.readInt();
+            while (strlen !== 0x0d) {
+              if (strlen === undefined) {
+                return;
+              }
+              strlen = msg.readInt();
             }
-            str = reader.readString();
+            const str = msg
+              .readSize(0x10)
+              ?.subarray(0, 0x0d)
+              ?.toString("utf-8");
+            if (str === "OfflineMoment") break;
           }
 
           for (let i = 0; i < 100; i++) {
-            const { mountStr, mountType } = reader.destruct<{
+            const { mountStr, mountType } = msg.destruct<{
               mountStr: string;
               mountType: string;
             }>([
-              { type: "uint[]", count: 7 },
+              { type: "uint[]", count: 6 },
               { key: "mountStr", type: "str" },
-              { type: "uint" },
               { key: "mountType", type: "str" },
             ]);
 
@@ -187,11 +181,9 @@ export default fp(
             { $set: record },
             { upsert: true }
           );
-
-          lookupSocket.socket.end();
         });
 
-        lookupSocket.send(Buffer.concat([LOOKUP, padString(uid)]));
+        lookupSocket.send(LOOKUP.addString(uid).build());
 
         return { queued: true };
       }
