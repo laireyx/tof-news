@@ -2,7 +2,6 @@ import fp from "fastify-plugin";
 import { ScanResponse } from "../../tof/scan";
 import TofReader from "../../tof/reader";
 import TofSocket from "../../tof/socket";
-import TofMessage from "../../tof/msg";
 
 declare module "fastify" {
   interface FastifyInstance {
