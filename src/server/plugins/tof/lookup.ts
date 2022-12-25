@@ -55,7 +55,7 @@ export default fp(
           const reader = new TofReader(lookupSocket.socket);
 
           // Consume Server Hello
-          if (reader.readableLength <= 340) {
+          if (reader.readableLength === 340) {
             reader.skip();
             return;
           }
@@ -75,7 +75,7 @@ export default fp(
           ]);
 
           if (!name || !uid || uid?.length !== 17) {
-            reader.skip();
+            lookupSocket.socket.end();
             return;
           }
 
@@ -92,7 +92,7 @@ export default fp(
           let str = reader.readString();
           while (str !== "OfflineMoment") {
             if (str === undefined) {
-              reader.skip();
+              lookupSocket.socket.end();
               return;
             }
             str = reader.readString();

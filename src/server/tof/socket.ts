@@ -12,6 +12,7 @@ export default class TofSocket {
     connectOpts: net.NetConnectOpts = {
       host: "8.213.130.139",
       port: 30031,
+      timeout: 5000,
     }
   ) {
     this.connectOpts = connectOpts;

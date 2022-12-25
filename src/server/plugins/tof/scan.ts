@@ -68,6 +68,12 @@ export default fp(
         scanSocket.on("readable", () => {
           const reader = new TofReader(scanSocket.socket);
 
+          // Consume Server Hello
+          if (reader.readableLength === 340) {
+            reader.skip();
+            return;
+          }
+
           for (;;) {
             const test = reader.r32()?.readUint32LE() ?? undefined;
 
@@ -97,13 +103,13 @@ export default fp(
 
             console.log("Scan result: ", name, uid);
             if (uid.length !== 17) {
-              reader.skip();
+              scanSocket.socket.end();
               return;
             }
             fastify.tofLookupByUid(uid);
           }
 
-          reader.skip();
+          scanSocket.socket.end();
         });
 
         scanSocket.send(scanPacket(name));
