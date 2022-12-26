@@ -1,5 +1,5 @@
 import fp from "fastify-plugin";
-import { env } from "process";
+import { env } from "node:process";
 import {
   EquipmentOption,
   LookupRecord,
