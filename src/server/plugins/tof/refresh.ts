@@ -21,15 +21,14 @@ export default fp(
       const expiredTime = Date.now() - +(env.LOOKUP_EXPIRE ?? "3600000");
       const startTime = Date.now();
 
-      const cursor = collection?.find(
-        {
-          timestamp: { $lte: expiredTime },
-        },
-        { noCursorTimeout: true }
-      );
+      const expiredRecords =
+        (await collection
+          ?.find({
+            timestamp: { $lte: expiredTime },
+          })
+          .toArray()) ?? [];
 
-      while (cursor?.hasNext()) {
-        const record = await cursor.next();
+      for (const record of expiredRecords) {
         if (record) fastify.tofLookupByUid(record.uid);
 
         // Sleep 250ms.
