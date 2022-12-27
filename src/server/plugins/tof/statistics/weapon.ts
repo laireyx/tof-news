@@ -18,6 +18,7 @@ export default fp(
 
     fastify.decorate("tofStatWeapons", async function () {
       if (lastChecked + +(env.STAT_EXPIRE ?? "600000") < Date.now()) {
+        lastChecked = Date.now();
         statResult.clear();
 
         await collection?.find().forEach(({ data: { weapons } }) => {
@@ -29,8 +30,6 @@ export default fp(
           const count = statResult.get(names) ?? 0;
           statResult.set(names, count + 1);
         });
-
-        lastChecked = Date.now();
       }
 
       return [...statResult.entries()];
