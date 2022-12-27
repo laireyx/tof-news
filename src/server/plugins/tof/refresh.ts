@@ -26,13 +26,14 @@ export default fp(
           ?.find({
             timestamp: { $lte: expiredTime },
           })
+          .limit(10)
           .toArray()) ?? [];
 
       for (const record of expiredRecords) {
         if (record) fastify.tofLookupByUid(record.uid);
 
         // Sleep 250ms.
-        await new Promise((resolve) => setTimeout(() => resolve(null), 250));
+        await new Promise((resolve) => setTimeout(() => resolve(null), 100));
       }
 
       return { success: true, time: Date.now() - startTime };
