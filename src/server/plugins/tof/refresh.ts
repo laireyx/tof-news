@@ -18,23 +18,15 @@ export default fp(
     const collection = fastify.mongo.db?.collection<LookupRecord>("lookup");
 
     fastify.decorate("tofRefresh", async function (): Promise<RefreshResult> {
-      const expiredTime = Date.now() - +(env.LOOKUP_EXPIRE ?? "3600000");
       const startTime = Date.now();
 
-      const expiredRecords =
-        (await collection
-          ?.find({
-            timestamp: { $lte: expiredTime },
-          })
-          .limit(10)
-          .toArray()) ?? [];
-
-      for (const record of expiredRecords) {
-        if (record) fastify.tofLookupByUid(record.uid);
-
-        // Sleep 250ms.
-        await new Promise((resolve) => setTimeout(() => resolve(null), 100));
-      }
+      await collection
+        ?.find()
+        .sort({ timestamp: 1 })
+        .limit(20)
+        .forEach((record) => {
+          fastify.tofLookupByUid(record.uid);
+        });
 
       return { success: true, time: Date.now() - startTime };
     });
