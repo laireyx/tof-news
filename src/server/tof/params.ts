@@ -10,4 +10,8 @@ type ScanParams = {
   nickname: string;
 };
 
-export { LookupByUidParams, LookupByNameParams, ScanParams };
+type RefreshParams = {
+  token: string;
+};
+
+export { LookupByUidParams, LookupByNameParams, ScanParams, RefreshParams };
