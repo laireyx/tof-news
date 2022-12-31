@@ -14,4 +14,14 @@ type RefreshParams = {
   token: string;
 };
 
-export { LookupByUidParams, LookupByNameParams, ScanParams, RefreshParams };
+type NametagParams = {
+  uid: string;
+};
+
+export {
+  LookupByUidParams,
+  LookupByNameParams,
+  ScanParams,
+  RefreshParams,
+  NametagParams,
+};

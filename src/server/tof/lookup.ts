@@ -45,14 +45,7 @@ type LookupRecord = {
   };
 };
 
-type LookupResponse = {
-  queued?: boolean;
-  num?: number;
-  data?: LookupRecord;
-};
-
 export {
-  LookupResponse,
   LookupRecord,
   EquipmentOption,
   EquipmentOptionElement,

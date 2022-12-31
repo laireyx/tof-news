@@ -3,7 +3,6 @@ import { env } from "node:process";
 import {
   EquipmentOption,
   LookupRecord,
-  LookupResponse,
   EquipmentOptionElement,
   EquipmentOptionValue,
   EquipmentOptionAdjust,
@@ -11,6 +10,12 @@ import {
 import TofMessageBuilder from "../../tof/msg";
 import { TofReader, TofMessage } from "../../tof/reader";
 import TofSocket from "../../tof/socket";
+
+type LookupResponse = {
+  queued?: boolean;
+  num?: number;
+  data?: LookupRecord;
+};
 
 declare module "fastify" {
   interface FastifyInstance {

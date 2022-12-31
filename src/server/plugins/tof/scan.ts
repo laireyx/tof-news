@@ -1,8 +1,10 @@
 import fp from "fastify-plugin";
-import { ScanResponse } from "../../tof/scan";
 import { TofReader } from "../../tof/reader";
 import TofSocket from "../../tof/socket";
 
+type ScanResponse = {
+  queued: boolean;
+};
 declare module "fastify" {
   interface FastifyInstance {
     tofScan: (uid: string) => Promise<ScanResponse>;
