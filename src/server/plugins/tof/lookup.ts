@@ -73,6 +73,9 @@ class TofUserMessage extends TofMessage {
 
     if (!intBuffer || !intType) return;
 
+    if (intType === "level") {
+      record.level = intBuffer.readUint32LE(intBuffer.length - 4);
+    }
     if (intType === "BattleStrengthScore") {
       record.battleStrength = intBuffer.readUint32LE(intBuffer.length - 4);
     }
@@ -206,6 +209,7 @@ export default fp(
             name,
 
             inGameUid: "",
+            level: 0,
             battleStrength: 0,
 
             timestamp: Date.now(),
