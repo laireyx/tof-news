@@ -124,4 +124,4 @@ class TofReader {
   }
 }
 
-export default TofReader;
+export { TofReader, TofMessage };

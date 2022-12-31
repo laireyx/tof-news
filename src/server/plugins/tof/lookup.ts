@@ -8,8 +8,8 @@ import {
   EquipmentOptionValue,
   EquipmentOptionAdjust,
 } from "../../tof/lookup";
-import TofMessage from "../../tof/msg";
-import TofReader from "../../tof/reader";
+import TofMessageBuilder from "../../tof/msg";
+import { TofReader, TofMessage } from "../../tof/reader";
 import TofSocket from "../../tof/socket";
 
 declare module "fastify" {
@@ -19,9 +19,145 @@ declare module "fastify" {
   }
 }
 
+class TofUserMessage extends TofMessage {
+  constructor(msg: TofMessage) {
+    super(msg.buffer);
+  }
+
+  extractUserInfo() {
+    return this.destruct<{
+      name: string;
+      uid: string;
+    }>([
+      { type: "uint[]", count: 29 },
+      { type: "str" }, // Current Location
+      { key: "name", type: "str" },
+      { type: "str" },
+      { key: "uid", type: "str" },
+    ]);
+  }
+
+  skipUntilMountInfo() {
+    while (true) {
+      let strlen = this.readInt();
+      while (strlen !== 0x0d) {
+        if (strlen === undefined) {
+          return false;
+        }
+        strlen = this.readInt();
+      }
+      const str = this.readSize(0x10)?.subarray(0, 0x0d)?.toString("utf-8");
+      if (str === "OfflineMoment") break;
+    }
+    return true;
+  }
+
+  readI64Chunk(record: LookupRecord) {
+    const chunkSize = this.readInt() ?? 0;
+    const i64Buffer = this.readSize(chunkSize - 4);
+    const i64Type = this.readString();
+
+    if (!i64Buffer || !i64Type) return;
+
+    if (i64Type === "uid") {
+      const server = i64Buffer.readBigUInt64LE(i64Buffer.length - 8);
+      const user = i64Buffer.readUint32LE(i64Buffer.length - 12);
+      record.inGameUid = `${server}${user}`;
+    }
+  }
+
+  readIntChunk(record: LookupRecord) {
+    const chunkSize = this.readInt() ?? 0;
+    const intBuffer = this.readSize(chunkSize - 4);
+    const intType = this.readString();
+
+    if (!intBuffer || !intType) return;
+
+    if (intType === "BattleStrengthScore") {
+      record.battleStrength = intBuffer.readUint32LE(intBuffer.length - 4);
+    }
+  }
+
+  readStringChunk(record: LookupRecord) {
+    const { strData, strType } = this.destruct<{
+      strData: string;
+      strType: string;
+    }>([
+      { type: "uint[]", count: 4 },
+      { key: "strData", type: "str" },
+      { key: "strType", type: "str" },
+    ]);
+
+    if (!strData || !strType) return;
+
+    if (strType.startsWith("Weapon_")) {
+      const matchResult = strData.match(/(.+)#\d+##(\d+)#&&(\d+):(\d+):\d+/);
+      if (matchResult) {
+        const [_, name, level, stars] = matchResult;
+
+        record.data.weapons.push({
+          name,
+          level: +level,
+          stars: +stars,
+        });
+      }
+    } else if (strType.startsWith("Equipment_")) {
+      const matchResult = strData.match(/(.+)#(\d+)#(.+)*#(\d+)#/);
+      if (matchResult) {
+        const [_, partString, level, optionsStr, stars] = matchResult;
+
+        const options = optionsStr
+          .split("|")
+          .map((eachOption): EquipmentOption => {
+            const [optionType, optionAmount] = eachOption.split(";");
+
+            const match = optionType
+              .slice(2)
+              .match(
+                /(Common|Element|Phy|Thunder|Fire|Ice|Superpower)?(Atk|Def|MaxHealth|Crit)(Added|Mult|ExtraUpMult)?/
+              );
+
+            if (match) {
+              const [_, element, value, adjust] = match as [
+                any,
+                EquipmentOptionElement,
+                EquipmentOptionValue,
+                EquipmentOptionAdjust
+              ];
+
+              return {
+                element,
+                value,
+                adjust: adjust ?? "Added", // ElementDef does not come with Added
+                amount: optionAmount.slice(2),
+              };
+            }
+
+            return {};
+          });
+
+        record.data.equipments.push({
+          part: partString,
+          level: +level,
+          options: options,
+          stars: +stars,
+        });
+      }
+    } else if (strType === "GuildName") {
+      record.guildName = strData;
+    }
+  }
+
+  skipChunk() {
+    const chunkSize = this.readInt() ?? 0;
+    this.readSize(chunkSize - 4);
+    this.readString();
+  }
+}
+
 export default fp(
   async function (fastify, opts) {
-    const LOOKUP = new TofMessage()
+    const LOOKUP = new TofMessageBuilder()
       .add([
         0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x0c, 0x00, 0x04, 0x00,
         0x00, 0x00, 0x08, 0x00, 0x0a, 0x00, 0x00, 0x00, 0x70, 0x04, 0x00, 0x00,
@@ -54,19 +190,12 @@ export default fp(
         const reader = new TofReader(lookupSocket.socket);
 
         lookupSocket.on("readable", async () => {
-          const msg = reader.readMessage();
-          if (msg == null) return;
+          const rawMsg = reader.readMessage();
+          if (rawMsg == null) return;
 
-          const { name, uid } = msg.destruct<{
-            name: string;
-            uid: string;
-          }>([
-            { type: "uint[]", count: 29 },
-            { type: "str" }, // Current Location
-            { key: "name", type: "str" },
-            { type: "str" },
-            { key: "uid", type: "str" },
-          ]);
+          const msg = new TofUserMessage(rawMsg);
+
+          const { name, uid } = msg.extractUserInfo();
 
           if (!name || !uid || uid?.length !== 17) {
             return;
@@ -75,6 +204,10 @@ export default fp(
           const record: LookupRecord = {
             uid,
             name,
+
+            inGameUid: "",
+            battleStrength: 0,
+
             timestamp: Date.now(),
             data: {
               weapons: [],
@@ -82,88 +215,22 @@ export default fp(
             },
           };
 
-          while (true) {
-            let strlen = msg.readInt();
-            while (strlen !== 0x0d) {
-              if (strlen === undefined) {
-                return;
-              }
-              strlen = msg.readInt();
-            }
-            const str = msg
-              .readSize(0x10)
-              ?.subarray(0, 0x0d)
-              ?.toString("utf-8");
-            if (str === "OfflineMoment") break;
-          }
+          if (!msg.skipUntilMountInfo()) return;
 
-          for (let i = 0; i < 100; i++) {
-            const { mountStr, mountType } = msg.destruct<{
-              mountStr: string;
-              mountType: string;
-            }>([
-              { type: "uint[]", count: 6 },
-              { key: "mountStr", type: "str" },
-              { key: "mountType", type: "str" },
-            ]);
+          for (let i = 0; i < 256; i++) {
+            // Skip unneccessary 4B.
+            msg.readInt();
+            // This is chunk type.
+            const chunkType = msg.readInt();
 
-            if (!mountStr || !mountType) break;
-
-            if (mountType.startsWith("Weapon_")) {
-              const matchResult = mountStr.match(
-                /(.+)#\d+##(\d+)#&&(\d+):(\d+):\d+/
-              );
-              if (matchResult) {
-                const [_, name, level, stars] = matchResult;
-
-                record.data.weapons.push({
-                  name,
-                  level: +level,
-                  stars: +stars,
-                });
-              }
-            } else if (mountType.startsWith("Equipment_")) {
-              const matchResult = mountStr.match(/(.+)#(\d+)#(.+)*#(\d+)#/);
-              if (matchResult) {
-                const [_, partString, level, optionsStr, stars] = matchResult;
-
-                const options = optionsStr
-                  .split("|")
-                  .map((eachOption): EquipmentOption => {
-                    const [optionType, optionAmount] = eachOption.split(";");
-
-                    const match = optionType
-                      .slice(2)
-                      .match(
-                        /(Common|Element|Phy|Thunder|Fire|Ice|Superpower)?(Atk|Def|MaxHealth|Crit)(Added|Mult|ExtraUpMult)?/
-                      );
-
-                    if (match) {
-                      const [_, element, value, adjust] = match as [
-                        any,
-                        EquipmentOptionElement,
-                        EquipmentOptionValue,
-                        EquipmentOptionAdjust
-                      ];
-
-                      return {
-                        element,
-                        value,
-                        adjust: adjust ?? "Added", // ElementDef does not come with Added
-                        amount: optionAmount.slice(2),
-                      };
-                    }
-
-                    return {};
-                  });
-
-                record.data.equipments.push({
-                  part: partString,
-                  level: +level,
-                  options: options,
-                  stars: +stars,
-                });
-              }
+            if (chunkType === 0x01000000) {
+              msg.readIntChunk(record);
+            } else if (chunkType === 0x03000000) {
+              msg.readI64Chunk(record);
+            } else if (chunkType === 0x06000000) {
+              msg.readStringChunk(record);
+            } else {
+              msg.skipChunk();
             }
           }
 
