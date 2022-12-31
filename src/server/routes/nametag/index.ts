@@ -18,7 +18,7 @@ export default async function (fastify: FastifyInstance) {
     },
     async function (request, reply) {
       const nametag = await fastify.tofNametag(request.params.uid);
-      reply.header("Cache-Ctonrol", nametag.maxAge);
+      reply.header("Cache-Control", `max-age=${nametag.maxAge}`);
       reply.type("image/svg+xml");
 
       return nametag.svg;
