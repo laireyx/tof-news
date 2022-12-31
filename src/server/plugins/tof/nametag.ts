@@ -58,9 +58,11 @@ export default fp(
           <text x="192" y="128" class="info">
             ${user.guildName ?? "[길드 미소속]"}
           </text>
-          <text x="334" y="284" class="uid">
-            ${user.uid}
-          </text>
+          <a href="//api.tof.news/nametag/${user.uid}">
+            <text x="334" y="284" class="uid">
+              ${user.uid}
+            </text>
+          </a>
           <text x="320" y="300" class="uid">
             powered by tof.news
           </text>
