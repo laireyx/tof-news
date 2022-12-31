@@ -58,7 +58,7 @@ export default fp(
           <text x="192" y="128" class="info">
             ${user.guildName ?? "[길드 미소속]"}
           </text>
-          <a href="//api.tof.news/nametag/${user.uid}">
+          <a href="//api.tof.news/nametag/${user.uid}" target="_blank">
             <text x="334" y="284" class="uid">
               ${user.uid}
             </text>
