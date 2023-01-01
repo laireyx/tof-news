@@ -7,7 +7,9 @@ export default async function (fastify: FastifyInstance) {
     {
       preValidation: (request, reply, done) => {
         const { uid } = request.params;
-        if (!uid.match(/[^\d]+(\.png)?/)) {
+        if (uid.length !== 17) {
+          done(new Error("Invalid UID"));
+        } else if (uid.match(/[^\d]/)) {
           done(new Error("Invalid UID"));
         }
 
