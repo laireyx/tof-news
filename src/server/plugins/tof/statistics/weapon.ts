@@ -21,15 +21,17 @@ export default fp(
         lastChecked = Date.now();
         statResult.clear();
 
-        await collection?.find().forEach(({ data: { weapons } }) => {
-          const names = weapons
-            .map(({ name }) => name)
-            .sort()
-            .join(";");
+        await collection
+          ?.find({ level: { $gte: 80 } })
+          .forEach(({ data: { weapons } }) => {
+            const names = weapons
+              .map(({ name }) => name)
+              .sort()
+              .join(";");
 
-          const count = statResult.get(names) ?? 0;
-          statResult.set(names, count + 1);
-        });
+            const count = statResult.get(names) ?? 0;
+            statResult.set(names, count + 1);
+          });
       }
 
       return [...statResult.entries()];
