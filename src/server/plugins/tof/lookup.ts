@@ -64,9 +64,11 @@ class TofUserMessage extends TofMessage {
 
     if (!i64Buffer || !i64Type) return;
 
+    const offset = i64Buffer.readUint32LE(0) + 4;
+
     if (i64Type === "uid") {
-      const server = i64Buffer.readBigUInt64LE(i64Buffer.length - 8);
-      const user = i64Buffer.readUint32LE(i64Buffer.length - 12);
+      const user = i64Buffer.readUint32LE(offset);
+      const server = i64Buffer.readUint32LE(offset + 4);
       record.inGameUid = `${server}${user}`;
     }
   }
