@@ -1,5 +1,5 @@
 import net from "node:net";
-import servers from "./servers.json";
+import { Servers } from "./servers";
 
 type Server = "101" | "102";
 type ListenerCallback = (...args: any[]) => void;
@@ -10,9 +10,9 @@ export default class TofSocket {
   private _socket: net.Socket;
   private _listeners: Map<string, ListenerCallback[]> = new Map();
 
-  constructor(server: string) {
+  constructor(server: Server) {
     this.connectOpts = {
-      host: servers[server as Server].host,
+      host: Servers[server as Server].host,
       port: 30031,
       timeout: 5000,
     };

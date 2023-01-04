@@ -1,5 +1,6 @@
 import fp from "fastify-plugin";
 import { LookupRecord } from "../../tof/lookup";
+import { Server } from "../../tof/servers";
 
 type RefreshResult = {
   success: boolean;
@@ -8,7 +9,7 @@ type RefreshResult = {
 
 declare module "fastify" {
   interface FastifyInstance {
-    tofRefresh: (server: string) => Promise<RefreshResult>;
+    tofRefresh: (server: Server) => Promise<RefreshResult>;
   }
 }
 
@@ -18,7 +19,7 @@ export default fp(
 
     fastify.decorate(
       "tofRefresh",
-      async function (server: string): Promise<RefreshResult> {
+      async function (server: Server): Promise<RefreshResult> {
         const startTime = Date.now();
 
         await collection

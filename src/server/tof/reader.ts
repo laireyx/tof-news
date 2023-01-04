@@ -15,7 +15,7 @@ type DestructOption =
 
 export { DestructOption };
 
-class TofMessage {
+class TofResponse {
   buffer: Buffer;
   constructor(buffer: Buffer) {
     this.buffer = buffer;
@@ -120,8 +120,8 @@ class TofReader {
     const readResult = this.read();
     if (readResult == null) return null;
 
-    return new TofMessage(readResult);
+    return new TofResponse(readResult);
   }
 }
 
-export { TofReader, TofMessage };
+export { TofReader, TofResponse };

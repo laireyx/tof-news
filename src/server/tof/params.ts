@@ -1,15 +1,17 @@
+import { Server } from "./servers";
+
 type LookupByUidParams = { uid: string };
-type LookupByUidQuery = { server: string };
+type LookupByUidQuery = { server: Server };
 
 type LookupByNameParams = { name: string };
-type LookupByNameQuery = { server: string };
+type LookupByNameQuery = { server: Server };
 
 type ScanParams = { name: string };
-type ScanQuery = { server: string };
+type ScanQuery = { server: Server };
 
 type RefreshQuery = {
   token: string;
-  server: string;
+  server: Server;
 };
 
 type NametagParams = {

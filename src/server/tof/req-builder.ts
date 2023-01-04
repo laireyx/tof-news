@@ -1,4 +1,4 @@
-class TofMessageBuilder {
+class TofRequestBuilder {
   chunks: Buffer[];
   frozenChunks: Buffer[];
   frozen: boolean;
@@ -31,7 +31,7 @@ class TofMessageBuilder {
     return this;
   }
 
-  addMsg(msg: TofMessageBuilder) {
+  addMsg(msg: TofRequestBuilder) {
     this.chunks.push(msg.build());
     return this;
   }
@@ -52,4 +52,4 @@ class TofMessageBuilder {
     return Buffer.concat([Buffer.from([msgLength, 0x00, 0x00, 0x00]), msg]);
   }
 }
-export default TofMessageBuilder;
+export default TofRequestBuilder;
