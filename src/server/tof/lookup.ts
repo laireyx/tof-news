@@ -32,6 +32,7 @@ type EquipmentStat = {
 type LookupRecord = {
   uid: string;
   name: string;
+  server: string;
 
   guildName?: string;
   inGameUid: string;

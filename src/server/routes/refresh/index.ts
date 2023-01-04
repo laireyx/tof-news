@@ -1,9 +1,9 @@
 import type { FastifyInstance } from "fastify";
-import { RefreshParams } from "../../tof/params";
+import { RefreshQuery } from "../../tof/params";
 import { env } from "node:process";
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get<{ Querystring: RefreshParams }>(
+  fastify.get<{ Querystring: RefreshQuery }>(
     "/",
     {
       preValidation: (request, reply, done) => {
@@ -14,8 +14,8 @@ export default async function (fastify: FastifyInstance) {
         done(undefined);
       },
     },
-    function () {
-      return fastify.tofRefresh();
+    function (request) {
+      return fastify.tofRefresh(request.query.server);
     }
   );
 }

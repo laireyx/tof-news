@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
-import { LookupByUidParams } from "../../../tof/params";
+import { LookupByUidParams, LookupByUidQuery } from "../../../tof/params";
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get<{ Params: LookupByUidParams }>(
+  fastify.get<{ Params: LookupByUidParams; Querystring: LookupByUidQuery }>(
     "/:uid",
     {
       preValidation: (request, reply, done) => {
@@ -17,7 +17,7 @@ export default async function (fastify: FastifyInstance) {
       },
     },
     function (request) {
-      return fastify.tofLookupByUid(request.params.uid);
+      return fastify.tofLookupByUid(request.params.uid, request.query.server);
     }
   );
 }

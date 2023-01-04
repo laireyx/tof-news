@@ -19,8 +19,11 @@ type LookupResponse = {
 
 declare module "fastify" {
   interface FastifyInstance {
-    tofLookupByUid: (uid: string) => Promise<LookupResponse>;
-    tofLookupByName: (nickname: string) => Promise<LookupResponse>;
+    tofLookupByUid: (uid: string, server: string) => Promise<LookupResponse>;
+    tofLookupByName: (
+      nickname: string,
+      server: string
+    ) => Promise<LookupResponse>;
   }
 }
 
@@ -185,7 +188,7 @@ export default fp(
 
     fastify.decorate(
       "tofLookupByUid",
-      async function (uid: string): Promise<LookupResponse> {
+      async function (uid: string, server: string): Promise<LookupResponse> {
         const queryResult = await collection?.findOne({
           uid,
         });
@@ -196,7 +199,7 @@ export default fp(
         )
           return { data: queryResult };
 
-        const lookupSocket = new TofSocket();
+        const lookupSocket = new TofSocket(server);
         const reader = new TofReader(lookupSocket.socket);
 
         lookupSocket.on("readable", async () => {
@@ -214,6 +217,7 @@ export default fp(
           const record: LookupRecord = {
             uid,
             name,
+            server,
 
             inGameUid: "",
             level: 0,
@@ -251,7 +255,7 @@ export default fp(
           // Update that user.
           // 일종의 밀어내기식 업데이트
           if (existingUser && existingUser.uid !== uid) {
-            fastify.tofLookupByUid(uid);
+            fastify.tofLookupByUid(uid, server);
           }
 
           await collection?.updateOne(
@@ -269,7 +273,7 @@ export default fp(
 
     fastify.decorate(
       "tofLookupByName",
-      async function (name: string): Promise<LookupResponse> {
+      async function (name: string, server: string): Promise<LookupResponse> {
         const queryResult = await collection?.findOne({
           name,
         });
@@ -280,10 +284,10 @@ export default fp(
         )
           return { data: queryResult };
         else if (queryResult) {
-          return await fastify.tofLookupByUid(queryResult.uid);
+          return await fastify.tofLookupByUid(queryResult.uid, server);
         }
 
-        return await fastify.tofScan(name);
+        return await fastify.tofScan(name, server);
       }
     );
   },

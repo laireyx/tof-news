@@ -1,17 +1,19 @@
 import fp from "fastify-plugin";
 import { TofReader } from "../../tof/reader";
 import TofSocket from "../../tof/socket";
+import servers from "../../tof/servers.json";
 
+type Server = "101" | "102";
 type ScanResponse = {
   queued: boolean;
 };
 declare module "fastify" {
   interface FastifyInstance {
-    tofScan: (uid: string) => Promise<ScanResponse>;
+    tofScan: (uid: string, server: string) => Promise<ScanResponse>;
   }
 }
 
-function scanPacket(name: string) {
+function scanPacket(name: string, server: string) {
   function padString(str: string) {
     const buf = Buffer.from(str, "utf-8");
     return Buffer.concat([
@@ -62,7 +64,7 @@ function scanPacket(name: string) {
       0x0f, 0x00, 0x00, 0x00, 0x44, 0x75, 0x6d, 0x6d, 0x79, 0x41, 0x75, 0x74,
       0x68, 0x54, 0x69, 0x63, 0x6b, 0x65, 0x74, 0x00, 0x11, 0x00, 0x00, 0x00,
     ]),
-    padString("42945816079448220"),
+    padString(servers[server as Server].uid),
   ]);
 
   // return new TofMessage()
@@ -112,8 +114,8 @@ export default fp(
   async function (fastify, opts) {
     fastify.decorate(
       "tofScan",
-      async function (name: string): Promise<ScanResponse> {
-        const scanSocket = new TofSocket();
+      async function (name: string, server: string): Promise<ScanResponse> {
+        const scanSocket = new TofSocket(server);
         const reader = new TofReader(scanSocket.socket);
 
         scanSocket.on("readable", () => {
@@ -148,11 +150,11 @@ export default fp(
             if (uid.length !== 17) {
               return;
             }
-            fastify.tofLookupByUid(uid);
+            fastify.tofLookupByUid(uid, server);
           }
         });
 
-        scanSocket.send(scanPacket(name));
+        scanSocket.send(scanPacket(name, server));
 
         return { queued: true };
       }

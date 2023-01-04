@@ -1,8 +1,8 @@
 import type { FastifyInstance } from "fastify";
-import { LookupByNameParams } from "../../../tof/params";
+import { LookupByNameParams, LookupByNameQuery } from "../../../tof/params";
 
 export default async function (fastify: FastifyInstance) {
-  fastify.get<{ Params: LookupByNameParams }>(
+  fastify.get<{ Params: LookupByNameParams; Querystring: LookupByNameQuery }>(
     "/:name",
     {
       preValidation: (request, reply, done) => {
@@ -15,7 +15,7 @@ export default async function (fastify: FastifyInstance) {
       },
     },
     function (request) {
-      return fastify.tofLookupByName(request.params.name);
+      return fastify.tofLookupByName(request.params.name, request.query.server);
     }
   );
 }

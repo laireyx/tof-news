@@ -1,17 +1,15 @@
-type LookupByUidParams = {
-  uid: string;
-};
+type LookupByUidParams = { uid: string };
+type LookupByUidQuery = { server: string };
 
-type LookupByNameParams = {
-  name: string;
-};
+type LookupByNameParams = { name: string };
+type LookupByNameQuery = { server: string };
 
-type ScanParams = {
-  nickname: string;
-};
+type ScanParams = { name: string };
+type ScanQuery = { server: string };
 
-type RefreshParams = {
+type RefreshQuery = {
   token: string;
+  server: string;
 };
 
 type NametagParams = {
@@ -20,8 +18,11 @@ type NametagParams = {
 
 export {
   LookupByUidParams,
+  LookupByUidQuery,
   LookupByNameParams,
+  LookupByNameQuery,
   ScanParams,
-  RefreshParams,
+  ScanQuery,
+  RefreshQuery,
   NametagParams,
 };
