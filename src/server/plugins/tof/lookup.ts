@@ -249,7 +249,7 @@ export default fp(
             }
           }
 
-          const existingUser = await collection?.findOne({ name });
+          const existingUser = await collection?.findOne({ name, server });
 
           // There already exists user with same name.
           // Update that user.
@@ -276,6 +276,7 @@ export default fp(
       async function (name: string, server: string): Promise<LookupResponse> {
         const queryResult = await collection?.findOne({
           name,
+          server,
         });
 
         if (
