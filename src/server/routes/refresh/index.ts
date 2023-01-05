@@ -14,8 +14,8 @@ export default async function (fastify: FastifyInstance) {
         done(undefined);
       },
     },
-    function (request) {
-      return fastify.tofRefresh(request.query.server);
+    function () {
+      return fastify.tofRefresh();
     }
   );
 }

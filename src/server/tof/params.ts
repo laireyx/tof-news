@@ -11,7 +11,6 @@ type ScanQuery = { server: Server };
 
 type RefreshQuery = {
   token: string;
-  server: Server;
 };
 
 type NametagParams = {
