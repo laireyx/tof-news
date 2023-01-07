@@ -30,7 +30,7 @@ export default fp(
 
           statResult[statName]?.clear();
 
-          const statKey = `$data.player.${statName}`;
+          const statKey = `data.player.${statName}`;
 
           let percentile = 0;
 
@@ -38,7 +38,7 @@ export default fp(
             ?.aggregate([
               {
                 $project: {
-                  value: statKey,
+                  value: `$${statKey}`,
                 },
               },
               {
@@ -62,6 +62,20 @@ export default fp(
               statResult[statName]?.set(percentile, value ?? 0);
               percentile++;
             });
+
+          const [maxItem] =
+            (await collection
+              ?.find()
+              .sort({ [statKey]: -1 })
+              .limit(1)
+              .toArray()) ?? [];
+
+          if (maxItem) {
+            statResult[statName]?.set(
+              percentile,
+              maxItem.data.player[statName] ?? 0
+            );
+          }
         }
 
         return [...(statResult[statName]?.entries() ?? [])];
