@@ -15,15 +15,14 @@ declare module "fastify" {
 
 export default fp(
   async function (fastify, opts) {
-    const collection = fastify.mongo.db?.collection<LookupRecord>("lookup");
-
-    const activeLevelThreshold = +(env.ACTIVE_LEVEL_THRES ?? 0);
+    const collection =
+      fastify.mongo.db?.collection<LookupRecord>("active-users");
 
     fastify.decorate("tofRefresh", async function (): Promise<RefreshResult> {
       const startTime = Date.now();
 
       await collection
-        ?.find({ level: { $gte: activeLevelThreshold } })
+        ?.find()
         .sort({ timestamp: 1 })
         .limit(20)
         .forEach((record) => {

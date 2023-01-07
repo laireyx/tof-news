@@ -12,11 +12,10 @@ declare module "fastify" {
 
 export default fp(
   async function (fastify, opts) {
-    const collection = fastify.mongo.db?.collection<LookupRecord>("lookup");
+    const collection =
+      fastify.mongo.db?.collection<LookupRecord>("active-users");
     const statResult: { [key in PlayerStatKeys]?: Map<number, number> } = {};
     let lastChecked: Map<PlayerStatKeys, number> = new Map();
-
-    const activeLevelThreshold = +(env.ACTIVE_LEVEL_THRES ?? 0);
 
     fastify.decorate(
       "tofStatPlayer",
@@ -33,10 +32,7 @@ export default fp(
 
           const statKey = `data.player.${statName}`;
 
-          const maxLevelPlayers =
-            (await collection?.countDocuments({
-              level: { $gte: activeLevelThreshold },
-            })) ?? 0;
+          const maxLevelPlayers = (await collection?.countDocuments()) ?? 0;
 
           for (let percentile = 1; percentile <= 100; percentile++) {
             const idx = Math.min(
@@ -44,17 +40,16 @@ export default fp(
               maxLevelPlayers - 1
             );
 
-            const [theOne] =
-              (await collection
-                ?.find({ level: { $gte: activeLevelThreshold } })
-                .sort({ [statKey]: 1 })
-                .skip(idx)
-                .limit(1)
-                .toArray()) ?? [];
+            const theOne = await collection
+              ?.find()
+              .sort({ [statKey]: 1 })
+              .skip(idx)
+              .limit(1)
+              .next();
 
             statResult[statName]?.set(
               percentile,
-              theOne.data.player[statName] ?? 0
+              theOne?.data.player[statName] ?? 0
             );
           }
         }
