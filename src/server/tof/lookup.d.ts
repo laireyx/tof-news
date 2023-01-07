@@ -23,6 +23,8 @@ type PlayerStat = Partial<{
   superpowerDef: number;
 }>;
 
+type PlayerStatKeys = keyof PlayerStat;
+
 type WeaponStat = {
   name: string;
   stars: number;
@@ -80,4 +82,6 @@ export {
   EquipmentOptionAdjust,
   WeaponStat,
   EquipmentStat,
+  PlayerStat,
+  PlayerStatKeys,
 };

@@ -2,11 +2,11 @@ import fp from "fastify-plugin";
 import { env } from "node:process";
 import { LookupRecord, WeaponStat } from "../../../tof/lookup";
 
-type WeaponStatistics = [string, number][];
+type WasponStats = [string, number][];
 
 declare module "fastify" {
   interface FastifyInstance {
-    tofStatWeapons: () => Promise<WeaponStatistics>;
+    tofStatWeapons: () => Promise<WasponStats>;
   }
 }
 

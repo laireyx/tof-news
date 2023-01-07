@@ -1,3 +1,4 @@
+import { PlayerStatKeys } from "./lookup";
 import { Server } from "./servers";
 
 type LookupByUidParams = { uid: string };
@@ -8,6 +9,8 @@ type LookupByNameQuery = { server: Server };
 
 type ScanParams = { name: string };
 type ScanQuery = { server: Server };
+
+type PlayerStatQuery = { stat: PlayerStatKeys };
 
 type RefreshQuery = {
   token: string;
@@ -24,6 +27,7 @@ export {
   LookupByNameQuery,
   ScanParams,
   ScanQuery,
+  PlayerStatQuery,
   RefreshQuery,
   NametagParams,
 };
