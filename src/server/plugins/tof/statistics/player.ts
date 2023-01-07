@@ -16,7 +16,7 @@ export default fp(
     const statResult: { [key in PlayerStatKeys]?: Map<number, number> } = {};
     let lastChecked: Map<PlayerStatKeys, number> = new Map();
 
-    const activeLevelThreshold = 80;
+    const activeLevelThreshold = +(env.ACTIVE_LEVEL_THRES ?? 0);
 
     fastify.decorate(
       "tofStatPlayer",
