@@ -30,28 +30,38 @@ export default fp(
 
           statResult[statName]?.clear();
 
-          const statKey = `data.player.${statName}`;
+          const statKey = `$data.player.${statName}`;
 
-          const maxLevelPlayers = (await collection?.countDocuments()) ?? 0;
+          let percentile = 0;
 
-          for (let percentile = 1; percentile <= 100; percentile++) {
-            const idx = Math.min(
-              (maxLevelPlayers * percentile) / 100,
-              maxLevelPlayers - 1
-            );
-
-            const theOne = await collection
-              ?.find()
-              .sort({ [statKey]: 1 })
-              .skip(idx)
-              .limit(1)
-              .next();
-
-            statResult[statName]?.set(
-              percentile,
-              theOne?.data.player[statName] ?? 0
-            );
-          }
+          await collection
+            ?.aggregate([
+              {
+                $project: {
+                  value: statKey,
+                },
+              },
+              {
+                $bucketAuto: {
+                  groupBy: "$value",
+                  buckets: 100,
+                  output: {
+                    value: {
+                      $push: "$value",
+                    },
+                  },
+                },
+              },
+              {
+                $project: {
+                  value: { $arrayElemAt: ["$value", 0] },
+                },
+              },
+            ])
+            .forEach(({ value }) => {
+              statResult[statName]?.set(percentile, value ?? 0);
+              percentile++;
+            });
         }
 
         return [...(statResult[statName]?.entries() ?? [])];
