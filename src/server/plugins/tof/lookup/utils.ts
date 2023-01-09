@@ -16,10 +16,10 @@ function calculateActualAtk(record: LookupRecord) {
   };
 
   const percentage = {
-    physic: 0,
-    fire: 0,
-    ice: 0,
-    thunder: 0,
+    physic: 1,
+    fire: 1,
+    ice: 1,
+    thunder: 1,
   };
 
   record.data.equipments.forEach(({ options }) => {
@@ -79,13 +79,13 @@ function calculateActualAtk(record: LookupRecord) {
   applyResonance("thunder");
 
   record.data.player.phyAtkDefault =
-    (record.data.player.phyAtkBase ?? 0) * (1 + percentage.physic);
+    (record.data.player.phyAtkBase ?? 0) * percentage.physic;
   record.data.player.fireAtkDefault =
-    (record.data.player.fireAtkBase ?? 0) * (1 + percentage.fire);
+    (record.data.player.fireAtkBase ?? 0) * percentage.fire;
   record.data.player.iceAtkDefault =
-    (record.data.player.iceAtkBase ?? 0) * (1 + percentage.ice);
+    (record.data.player.iceAtkBase ?? 0) * percentage.ice;
   record.data.player.thunderAtkDefault =
-    (record.data.player.thunderAtkBase ?? 0) * (1 + percentage.thunder);
+    (record.data.player.thunderAtkBase ?? 0) * percentage.thunder;
 }
 
 export { calculateActualAtk };
