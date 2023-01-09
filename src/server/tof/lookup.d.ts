@@ -10,6 +10,12 @@ type PlayerStat = Partial<{
   thunderAtkBase: number;
   superpowerAtkBase: number;
 
+  phyAtkDefault: number;
+  fireAtkDefault: number;
+  iceAtkDefault: number;
+  thunderAtkDefault: number;
+  superpowerAtkDefault: number;
+
   phyAtk: number;
   fireAtk: number;
   iceAtk: number;

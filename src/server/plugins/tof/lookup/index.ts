@@ -6,6 +6,7 @@ import { TofReader } from "../../../tof/reader";
 import TofSocket from "../../../tof/socket";
 import TofUserResponse from "./response";
 import { Server } from "../../../tof/servers";
+import { calculateActualAtk } from "./utils";
 
 type LookupResponse = {
   queued?: boolean;
@@ -88,7 +89,7 @@ export default fp(
 
           if (!msg.skipUntilMountInfo()) return;
 
-          for (let i = 0; i < 256; i++) {
+          for (let i = 0; i < 512; i++) {
             // Skip unneccessary 4B.
             msg.readInt();
             // This is chunk type.
@@ -106,6 +107,9 @@ export default fp(
               msg.skipChunk();
             }
           }
+
+          calculateActualAtk(record);
+          console.log(record.data.player);
 
           const existingUser = await collection?.findOne({ name, server });
 
