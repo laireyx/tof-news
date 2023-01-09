@@ -26,6 +26,9 @@ export default fp(
       setTimeout(() => refresh(), refreshInterval);
     };
 
+    console.log(
+      `[@plugin/tof/refresh] User refresh plugin registered: ${refreshInterval}`
+    );
     if (refreshInterval > 0) {
       refresh();
     }
