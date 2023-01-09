@@ -109,7 +109,6 @@ export default fp(
           }
 
           calculateActualAtk(record);
-          console.log(record.data.player);
 
           const existingUser = await collection?.findOne({ name, server });
 

@@ -7,32 +7,31 @@ type RefreshResult = {
   time: number;
 };
 
-declare module "fastify" {
-  interface FastifyInstance {
-    tofRefresh: () => Promise<RefreshResult>;
-  }
-}
-
 export default fp(
   async function (fastify, opts) {
     const collection =
       fastify.mongo.db?.collection<LookupRecord>("active-users");
 
-    fastify.decorate("tofRefresh", async function (): Promise<RefreshResult> {
-      const startTime = Date.now();
+    const refreshInterval = +(env.REFRESH_INTERVAL ?? -1);
 
+    const refresh = async function () {
       await collection
         ?.find()
         .sort({ timestamp: 1 })
-        .limit(20)
+        .limit(10)
         .forEach((record) => {
           fastify.tofLookupByUid(record.uid, record.server);
         });
 
-      return { success: true, time: Date.now() - startTime };
-    });
+      setTimeout(() => refresh(), refreshInterval);
+    };
+
+    if (refreshInterval > 0) {
+      refresh();
+    }
   },
   {
     name: "tof/refresh",
+    dependencies: ["tof/lookup"],
   }
 );
