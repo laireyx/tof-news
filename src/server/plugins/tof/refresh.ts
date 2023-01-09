@@ -15,7 +15,6 @@ export default fp(
     const refreshInterval = +(env.REFRESH_INTERVAL ?? -1);
 
     const refresh = async function () {
-      console.log("Refresh hit!");
       await collection
         ?.find()
         .sort({ timestamp: 1 })
@@ -27,11 +26,12 @@ export default fp(
       setTimeout(() => refresh(), refreshInterval);
     };
 
-    console.log(
-      `[@plugin/tof/refresh] User refresh plugin registered: ${refreshInterval}`
-    );
     if (refreshInterval > 0) {
-      refresh();
+      await refresh();
+
+      console.log(
+        `[@plugin/tof/refresh] User refresh plugin registered: ${refreshInterval}`
+      );
     }
   },
   {
