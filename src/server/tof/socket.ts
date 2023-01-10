@@ -1,7 +1,6 @@
 import net from "node:net";
-import { Servers } from "./servers";
+import { Server, Servers } from "./servers";
 
-type Server = "101" | "102";
 type ListenerCallback = (...args: any[]) => void;
 
 export default class TofSocket {
