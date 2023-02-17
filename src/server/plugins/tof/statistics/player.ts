@@ -14,21 +14,19 @@ export default fp(
   async function (fastify, opts) {
     const collection =
       fastify.mongo.db?.collection<LookupRecord>("active-users");
-    const statResult: { [key in PlayerStatKeys]?: Map<number, number> } = {};
+    const statResult: { [key in PlayerStatKeys]?: number[] } = {};
     let lastChecked: Map<PlayerStatKeys, number> = new Map();
 
     fastify.decorate(
       "tofStatPlayer",
       async function (statName: PlayerStatKeys) {
-        if (!statResult[statName]) statResult[statName] = new Map();
-
         if (
           (lastChecked.get(statName) ?? -1) + +(env.STAT_EXPIRE ?? "600000") <
           Date.now()
         ) {
           lastChecked.set(statName, Date.now());
 
-          statResult[statName]?.clear();
+          statResult[statName] = [];
 
           const statKey = `data.player.${statName}`;
 
@@ -59,7 +57,7 @@ export default fp(
               },
             ])
             .forEach(({ value }) => {
-              statResult[statName]?.set(percentile, value ?? 0);
+              statResult[statName]?.push(value ?? 0);
               percentile++;
             });
 
@@ -71,14 +69,11 @@ export default fp(
               .toArray()) ?? [];
 
           if (maxItem) {
-            statResult[statName]?.set(
-              percentile,
-              maxItem.data.player[statName] ?? 0
-            );
+            statResult[statName]?.push(maxItem.data.player[statName] ?? 0);
           }
         }
 
-        return [...(statResult[statName]?.entries() ?? [])];
+        return statResult[statName];
       }
     );
   },

@@ -2,13 +2,13 @@ import fp from "fastify-plugin";
 import { env } from "node:process";
 import { LookupRecord } from "../../../tof/lookup";
 
-type EquipStats = [string, number][];
+type EquipStats = [number, number][];
 
 type EquipAtkData = number;
 
 declare module "fastify" {
   interface FastifyInstance {
-    tofStatEquipments: (atk: number) => Promise<EquipStats>;
+    tofStatEquipments: () => Promise<EquipStats>;
   }
 }
 
@@ -19,20 +19,6 @@ export default fp(
 
     let atkResult: EquipAtkData[] = [];
     let lastChecked = 0;
-
-    function getRank(atk: number) {
-      let low = 0,
-        high = atkResult.length - 1;
-      while (atk != atkResult[(low + high) >> 1]) {
-        if (atk < atkResult[(low + high) >> 1]) {
-          high = ((low + high) >> 1) - 1;
-        } else {
-          low = ((low + high) >> 1) + 1;
-        }
-      }
-
-      return (low + high) >> 1;
-    }
 
     fastify.decorate("tofStatEquipments", async function (atk: number) {
       if (lastChecked + +(env.STAT_EXPIRE ?? "600000") < Date.now()) {
@@ -91,14 +77,18 @@ export default fp(
               },
             },
           ])
-          .forEach((doc) => {
-            atkResult.push(doc.commonAtk + doc.maxElemAtk);
+          .forEach(({ attackOpts: { commonAtk, maxElemAtk } }) => {
+            atkResult.push(commonAtk + maxElemAtk);
           });
 
         atkResult.sort((a, b) => a - b);
+        atkResult = atkResult.filter(
+          (_, i) =>
+            i % ~~(atkResult.length / 100) === 0 || i === atkResult.length - 1
+        );
       }
 
-      return getRank(atk);
+      return atkResult;
     });
   },
   {
