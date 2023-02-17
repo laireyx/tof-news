@@ -84,7 +84,7 @@ export default fp(
         atkResult.sort((a, b) => a - b);
         atkResult = atkResult.filter(
           (_, i) =>
-            i % ~~(atkResult.length / 100) === 0 || i === atkResult.length - 1
+            i % ~~(atkResult.length / 99) === 0 || i === atkResult.length - 1
         );
       }
 
