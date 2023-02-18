@@ -42,6 +42,9 @@ export default fp(
                             {
                               $eq: ["$$this.adjust", "Added"],
                             },
+                            {
+                              $ne: ["$$this.element", "Superpower"],
+                            },
                           ],
                         },
                       },
