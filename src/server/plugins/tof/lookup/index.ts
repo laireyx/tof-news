@@ -45,6 +45,16 @@ export default fp(
     fastify.decorate(
       "tofLookupByUid",
       async function (uid: string, server: Server): Promise<LookupResponse> {
+        let resolve: (resp: LookupResponse) => void;
+        let reject: (reason: any) => void;
+
+        const returnPromise = new Promise<LookupResponse>(
+          (_resolve, _reject) => {
+            resolve = _resolve;
+            reject = _reject;
+          }
+        );
+
         const queryResult = await collection?.findOne({
           uid,
         });
@@ -124,11 +134,15 @@ export default fp(
             { $set: record },
             { upsert: true }
           );
+
+          resolve({ data: record });
         });
 
         lookupSocket.send(LOOKUP.addString(uid).build());
-
-        return { queued: true };
+        lookupSocket.on("invalidate", () =>
+          reject({ status: 500, reason: "Internel Server Error" })
+        );
+        return returnPromise;
       }
     );
 
