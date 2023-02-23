@@ -1,7 +1,7 @@
 import { LookupRecord } from "../../../tof/lookup";
 
 const ResonanceWeapons = {
-  physic: ["arm_physic", "sword_physic"],
+  physic: ["arm_physic", "sword_physic", "Whip_physic"],
   fire: ["funnel_fire", "gun_fire", "Snipe_fire"],
   ice: ["Dkatana_ice", "Frigg_ice", "iceblade_ice"],
   thunder: ["Suspension_thunder", "tianlang_thunder"],
