@@ -2,11 +2,6 @@ import fp from "fastify-plugin";
 import { env } from "node:process";
 import { LookupRecord } from "../../tof/lookup";
 
-type RefreshResult = {
-  success: boolean;
-  time: number;
-};
-
 export default fp(
   async function (fastify, opts) {
     const collection =

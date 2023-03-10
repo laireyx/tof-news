@@ -53,6 +53,9 @@ class TofUserResponse extends TofResponse {
       const user = i64Buffer.readUint32LE(offset);
       const server = i64Buffer.readUint32LE(offset + 4);
       record.inGameUid = `${server}${user}`;
+    } else if (i64Type === "OfflineMoment") {
+      const offlineMoment = i64Buffer.readBigUint64LE(offset);
+      record.offlineMoment = offlineMoment.toString();
     }
   }
 

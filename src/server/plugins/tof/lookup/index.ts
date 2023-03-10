@@ -89,6 +89,8 @@ export default fp(
             level: 0,
             battleStrength: 0,
 
+            offlineMoment: "-1",
+
             timestamp: Date.now(),
             data: {
               player: {},

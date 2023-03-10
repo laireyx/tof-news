@@ -72,6 +72,8 @@ type LookupRecord = {
   level: number;
   battleStrength: number; // aka GS
 
+  offlineMoment: string;
+
   timestamp: number;
   data: {
     player: PlayerStat;
