@@ -4,7 +4,8 @@ const ResonanceWeapons = {
   physic: ["arm_physic", "sword_physic", "Whip_physic"],
   fire: ["funnel_fire", "gun_fire", "Snipe_fire"],
   ice: ["Dkatana_ice", "Frigg_ice", "iceblade_ice"],
-  thunder: ["Suspension_thunder", "tianlang_thunder"],
+  thunder: ["Suspension_thunder", "tianlang_thunder", "fenrir_thunder"],
+  harmony: ["fenrir_thunder"],
 };
 
 function calculateActualAtk(record: LookupRecord) {
@@ -13,6 +14,7 @@ function calculateActualAtk(record: LookupRecord) {
     fire: 0,
     ice: 0,
     thunder: 0,
+    superpower: 0,
   };
 
   const percentage = {
@@ -62,7 +64,9 @@ function calculateActualAtk(record: LookupRecord) {
     }
   });
 
-  function applyResonance(elem: keyof typeof ResonanceWeapons) {
+  function applyResonance(
+    elem: Exclude<keyof typeof ResonanceWeapons, "harmony">
+  ) {
     if (
       resonanceCount[elem] >= 2 &&
       record.data.weapons.some(({ name }) =>
@@ -77,6 +81,27 @@ function calculateActualAtk(record: LookupRecord) {
   applyResonance("fire");
   applyResonance("ice");
   applyResonance("thunder");
+
+  // Apply harmony resonance
+  if (
+    (resonanceCount.physic === 0 ? 1 : 0) +
+      (resonanceCount.fire === 0 ? 1 : 0) +
+      (resonanceCount.ice === 0 ? 1 : 0) +
+      (resonanceCount.thunder === 0 ? 1 : 0) +
+      (resonanceCount.superpower === 0 ? 1 : 0) ===
+    2
+  ) {
+    if (
+      record.data.weapons.some(({ name }) =>
+        ResonanceWeapons.harmony.includes(name)
+      )
+    ) {
+      percentage.physic += 0.15;
+      percentage.fire += 0.15;
+      percentage.ice += 0.15;
+      percentage.thunder += 0.15;
+    }
+  }
 
   record.data.player.phyAtkDefault =
     (record.data.player.phyAtkBase ?? 0) * percentage.physic;
