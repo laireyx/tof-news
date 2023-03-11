@@ -25,17 +25,20 @@ class TofUserResponse extends TofResponse {
     ]);
   }
 
-  skipUntilMountInfo() {
+  skipUntilChunks() {
+    let skipFirst = false;
+
     while (true) {
-      let strlen = this.readInt();
-      while (strlen !== 0x0d) {
-        if (strlen === undefined) {
+      let int = this.readInt();
+      while (int !== 0x04) {
+        if (int === undefined) {
           return false;
         }
-        strlen = this.readInt();
+        int = this.readInt();
       }
-      const str = this.readSize(0x10)?.subarray(0, 0x0d)?.toString("utf-8");
-      if (str === "OfflineMoment") break;
+
+      if (skipFirst) break;
+      else skipFirst = true;
     }
     return true;
   }

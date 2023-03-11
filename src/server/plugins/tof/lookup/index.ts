@@ -99,7 +99,7 @@ export default fp(
             },
           };
 
-          if (!msg.skipUntilMountInfo()) return;
+          if (!msg.skipUntilChunks()) return;
 
           for (let i = 0; i < 512; i++) {
             // Skip unneccessary 4B.
