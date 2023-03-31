@@ -141,8 +141,10 @@ export default fp(
         });
 
         lookupSocket.send(LOOKUP.addString(uid).build());
-        lookupSocket.on("invalidate", () =>
-          reject({ status: 500, reason: "Internel Server Error" })
+        lookupSocket.on(
+          "invalidate",
+          () => resolve({})
+          // reject({ status: 500, reason: "Internel Server Error" })
         );
         return returnPromise;
       }
